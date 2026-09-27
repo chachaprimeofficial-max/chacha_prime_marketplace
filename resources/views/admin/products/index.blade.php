@@ -1,0 +1,8 @@
+@extends('layouts.admin')
+
+@section('content')
+<div class="space-y-6">
+    <div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Catalog</p><h1 class="mt-1 text-3xl font-bold">Products</h1></div><a href="{{ route('admin.products.create') }}" class="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white">Add Product</a></div>
+    <div class="overflow-hidden rounded-3xl border bg-white shadow-sm"><div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="bg-slate-50 text-slate-500"><tr><th class="px-5 py-4">Product</th><th class="px-5 py-4">SKU</th><th class="px-5 py-4">Retail</th><th class="px-5 py-4">Wholesale</th><th class="px-5 py-4">Group</th><th class="px-5 py-4">Stock</th><th class="px-5 py-4">Status</th></tr></thead><tbody class="divide-y">@forelse($products as $product)<tr><td class="px-5 py-4 font-semibold">{{ $product->title }}</td><td class="px-5 py-4 font-mono text-xs">{{ $product->sku }}</td><td class="px-5 py-4">{{ number_format($product->retail_price,2) }}</td><td class="px-5 py-4">{{ number_format($product->wholesale_price ?? 0,2) }}</td><td class="px-5 py-4">{{ number_format($product->group_buying_price ?? 0,2) }}</td><td class="px-5 py-4">{{ $product->stock_qty }}</td><td class="px-5 py-4"><span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">{{ ucfirst($product->status) }}</span></td></tr>@empty<tr><td colspan="7" class="px-5 py-12 text-center text-slate-500">No products found.</td></tr>@endforelse</tbody></table></div><div class="p-5">{{ $products->links() }}</div></div>
+</div>
+@endsection
