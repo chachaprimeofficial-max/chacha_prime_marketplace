@@ -7,29 +7,65 @@ use RuntimeException;
 
 class WalletService
 {
-    public function credit(int $userId, float $amount, string $reason, ?string $description = null): void
+    public function balance(int $userId): float
     {
-        $this->entry($userId, 'credit', $amount, $reason, $description);
+        $wallet = DB::table('wallets')->where('user_id', $userId)->first();
+        return $wallet ? (float) $wallet->balance : 0.0;
     }
 
-    public function debit(int $userId, float $amount, string $reason, ?string $description = null): void
+    public function credit(int $userId, float $amount, string $reason, ?string $description = null, ?string $referenceType = null, ?int $referenceId = null): void
     {
-        $this->entry($userId, 'debit', $amount, $reason, $description);
+        $this->entry($userId, 'credit', $amount, $reason, $description, $referenceType, $referenceId);
     }
 
-    private function entry(int $userId, string $type, float $amount, string $reason, ?string $description): void
+    public function debit(int $userId, float $amount, string $reason, ?string $description = null, ?string $referenceType = null, ?int $referenceId = null): void
+    {
+        $this->entry($userId, 'debit', $amount, $reason, $description, $referenceType, $referenceId);
+    }
+
+    private function entry(int $userId, string $type, float $amount, string $reason, ?string $description, ?string $referenceType, ?int $referenceId): void
     {
         if ($amount <= 0) throw new RuntimeException('Wallet amount must be greater than zero.');
-        DB::transaction(function () use ($userId, $type, $amount, $reason, $description) {
+
+        DB::transaction(function () use ($userId, $type, $amount, $reason, $description, $referenceType, $referenceId) {
             $wallet = DB::table('wallets')->where('user_id', $userId)->lockForUpdate()->first();
+
             if (!$wallet) {
-                DB::table('wallets')->insert(['user_id'=>$userId,'currency'=>config('chacha.brand.default_currency','USD'),'balance'=>0,'status'=>'active','created_at'=>now(),'updated_at'=>now()]);
+                DB::table('wallets')->insert([
+                    'user_id' => $userId,
+                    'currency' => config('chacha.brand.default_currency', 'USD'),
+                    'balance' => 0,
+                    'status' => 'active',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
                 $wallet = DB::table('wallets')->where('user_id', $userId)->lockForUpdate()->first();
             }
-            $balance = $type === 'credit' ? (float)$wallet->balance + $amount : (float)$wallet->balance - $amount;
+
+            if ($wallet->status !== 'active') throw new RuntimeException('Wallet is locked.');
+
+            $balance = $type === 'credit'
+                ? (float) $wallet->balance + $amount
+                : (float) $wallet->balance - $amount;
+
             if ($balance < 0) throw new RuntimeException('Insufficient wallet balance.');
-            DB::table('wallets')->where('id',$wallet->id)->update(['balance'=>$balance,'updated_at'=>now()]);
-            DB::table('wallet_ledger')->insert(['wallet_id'=>$wallet->id,'entry_type'=>$type,'reason'=>$reason,'amount'=>$amount,'balance_after'=>$balance,'description'=>$description,'created_at'=>now()]);
+
+            DB::table('wallets')->where('id', $wallet->id)->update([
+                'balance' => $balance,
+                'updated_at' => now(),
+            ]);
+
+            DB::table('wallet_ledger')->insert([
+                'wallet_id' => $wallet->id,
+                'entry_type' => $type,
+                'reason' => $reason,
+                'amount' => $amount,
+                'balance_after' => $balance,
+                'reference_type' => $referenceType,
+                'reference_id' => $referenceId,
+                'description' => $description,
+                'created_at' => now(),
+            ]);
         });
     }
 }
