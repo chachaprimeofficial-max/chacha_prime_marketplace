@@ -1,0 +1,15 @@
+/vendor/
+/node_modules/
+.env
+.env.*
+!.env.example
+/storage/*.key
+/storage/app/*
+/storage/framework/*
+/storage/logs/*
+/public/storage
+/public/uploads
+npm-debug.log
+yarn-error.log
+.phpunit.result.cache
+.DS_Store
