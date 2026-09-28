@@ -1,10 +1,13 @@
 <?php
 use App\Http\Controllers\Customer\AccountController;
+use App\Http\Controllers\Customer\CheckoutPaymentController;
 use App\Http\Controllers\Customer\NotificationController;
+use App\Http\Controllers\Customer\PaymentResultController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\ReturnController;
 use App\Http\Controllers\Customer\WalletController;
 use App\Http\Controllers\Customer\WishlistReviewController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\ProductController;
@@ -15,10 +18,13 @@ Route::get('/cart',[CartController::class,'index'])->name('cart.index');
 Route::post('/cart/add',[CartController::class,'add'])->name('cart.add');
 Route::post('/cart/update',[CartController::class,'update'])->name('cart.update');
 Route::get('/cart/remove/{key}',[CartController::class,'remove'])->name('cart.remove');
+Route::post('/payments/webhook/{provider}',[PaymentWebhookController::class,'handle'])->name('payments.webhook');
 Route::middleware('auth')->group(function(){
  Route::get('/checkout',[CheckoutController::class,'index'])->name('checkout.index');
  Route::post('/checkout/place',[CheckoutController::class,'place'])->name('checkout.place');
  Route::get('/checkout/success/{order}',[CheckoutController::class,'success'])->name('checkout.success');
+ Route::prefix('customer/checkout')->name('customer.checkout.')->group(function(){Route::get('/payment-methods',[CheckoutPaymentController::class,'methods'])->name('payment-methods');Route::post('/payment',[CheckoutPaymentController::class,'store'])->name('payment');});
+ Route::get('/customer/payment/result/{payment}',[PaymentResultController::class,'show'])->name('customer.payment.result');
  Route::prefix('account')->name('customer.')->group(function(){
   Route::get('/',[AccountController::class,'dashboard'])->name('dashboard');
   Route::get('/orders',[AccountController::class,'orders'])->name('orders');
