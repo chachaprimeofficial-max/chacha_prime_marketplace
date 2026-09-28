@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Customer\AccountController;
 use App\Http\Controllers\Customer\WalletController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
@@ -16,7 +17,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/place', [CheckoutController::class, 'place'])->name('checkout.place');
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
-});
-Route::middleware('auth')->prefix('account')->name('customer.')->group(function () {
-    Route::get('/wallet', [WalletController::class, 'index'])->name('wallet');
+    Route::prefix('account')->name('customer.')->group(function () {
+        Route::get('/', [AccountController::class, 'dashboard'])->name('dashboard');
+        Route::get('/orders', [AccountController::class, 'orders'])->name('orders');
+        Route::get('/orders/{order}', [AccountController::class, 'order'])->name('orders.show');
+        Route::post('/orders/{order}/cancel', [AccountController::class, 'cancel'])->name('orders.cancel');
+        Route::get('/wallet', [WalletController::class, 'index'])->name('wallet');
+    });
 });
