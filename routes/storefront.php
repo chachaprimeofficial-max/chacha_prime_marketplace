@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Customer\AccountController;
+use App\Http\Controllers\Customer\ReturnController;
 use App\Http\Controllers\Customer\WalletController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
@@ -22,6 +23,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders', [AccountController::class, 'orders'])->name('orders');
         Route::get('/orders/{order}', [AccountController::class, 'order'])->name('orders.show');
         Route::post('/orders/{order}/cancel', [AccountController::class, 'cancel'])->name('orders.cancel');
+        Route::get('/returns', [ReturnController::class, 'index'])->name('returns');
+        Route::get('/orders/{order}/return', [ReturnController::class, 'create'])->name('returns.create');
+        Route::post('/returns', [ReturnController::class, 'store'])->name('returns.store');
+        Route::post('/returns/{return}/cancel', [ReturnController::class, 'cancel'])->name('returns.cancel');
         Route::get('/wallet', [WalletController::class, 'index'])->name('wallet');
     });
 });
