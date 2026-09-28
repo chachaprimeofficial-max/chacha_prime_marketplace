@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReturnController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
@@ -16,4 +17,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/products/{product}/inventory',[ProductController::class,'inventory'])->name('products.inventory');
     Route::post('/products/{product}/media',[ProductController::class,'mediaStore'])->name('products.media.store');
     Route::delete('/products/{product}/media/{media}',[ProductController::class,'mediaDelete'])->name('products.media.delete');
+    Route::get('/returns',[ReturnController::class,'index'])->name('returns.index');
+    Route::post('/returns/{return}/approve',[ReturnController::class,'approve'])->name('returns.approve');
+    Route::post('/returns/{return}/reject',[ReturnController::class,'reject'])->name('returns.reject');
+    Route::post('/returns/{return}/refund',[ReturnController::class,'refund'])->name('returns.refund');
 });
