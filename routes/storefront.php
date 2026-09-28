@@ -43,5 +43,8 @@ Route::middleware('auth')->group(function(){
   Route::delete('/addresses/{address}',[ProfileController::class,'addressDelete'])->name('addresses.delete');
   Route::get('/security',[ProfileController::class,'security'])->name('security');
   Route::put('/security/password',[ProfileController::class,'password'])->name('security.password');
+  Route::get('/security/2fa/setup',[ProfileController::class,'twoFactorSetup'])->name('security.2fa.setup');
+  Route::post('/security/2fa/confirm',[ProfileController::class,'twoFactorConfirm'])->name('security.2fa.confirm');
+  Route::post('/security/2fa/disable',[ProfileController::class,'twoFactorDisable'])->name('security.2fa.disable');
  });
 });
