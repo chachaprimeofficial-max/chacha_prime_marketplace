@@ -1,45 +1,11 @@
 <?php
-
 namespace App\Services;
-
 use Illuminate\Support\Facades\DB;
-
+use RuntimeException;
 class PaymentService
 {
-    public function recordPending(int $orderId, int $userId, string $provider, float $amount, ?string $transactionReference = null): int
-    {
-        return DB::table('payments')->insertGetId([
-            'order_id' => $orderId,
-            'user_id' => $userId,
-            'provider' => $provider,
-            'transaction_reference' => $transactionReference,
-            'amount' => $amount,
-            'currency' => config('chacha.brand.default_currency', 'USD'),
-            'status' => 'pending',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    public function markPaid(int $paymentId, ?string $transactionReference = null): void
-    {
-        DB::transaction(function () use ($paymentId, $transactionReference) {
-            $payment = DB::table('payments')->where('id', $paymentId)->lockForUpdate()->first();
-            if (!$payment) return;
-
-            DB::table('payments')->where('id', $paymentId)->update([
-                'status' => 'paid',
-                'transaction_reference' => $transactionReference ?: $payment->transaction_reference,
-                'updated_at' => now(),
-            ]);
-
-            if ($payment->order_id) {
-                DB::table('orders')->where('id', $payment->order_id)->update([
-                    'status' => 'confirmed',
-                    'payment_status' => 'paid',
-                    'updated_at' => now(),
-                ]);
-            }
-        });
-    }
+ public function recordPending(int $orderId,int $userId,string $provider,float $amount,?string $transactionReference=null):int{return DB::table('payments')->insertGetId(['order_id'=>$orderId,'user_id'=>$userId,'provider'=>$provider,'transaction_reference'=>$transactionReference,'amount'=>$amount,'currency'=>config('chacha.brand.default_currency','USD'),'status'=>'pending','created_at'=>now(),'updated_at'=>now()]);}
+ public function markPaid(int $paymentId,?string $transactionReference=null):void{DB::transaction(function()use($paymentId,$transactionReference){$p=DB::table('payments')->where('id',$paymentId)->lockForUpdate()->first();if(!$p||$p->status==='paid')return;DB::table('payments')->where('id',$paymentId)->update(['status'=>'paid','transaction_reference'=>$transactionReference?:$p->transaction_reference,'paid_at'=>now(),'updated_at'=>now()]);if($p->order_id)DB::table('orders')->where('id',$p->order_id)->update(['status'=>'confirmed','payment_status'=>'paid','updated_at'=>now()]);});}
+ public function markFailed(int $paymentId,?string $reason=null):void{DB::transaction(function()use($paymentId,$reason){$p=DB::table('payments')->where('id',$paymentId)->lockForUpdate()->first();if(!$p||$p->status==='paid')return;DB::table('payments')->where('id',$paymentId)->update(['status'=>'failed','failure_reason'=>$reason,'updated_at'=>now()]);if($p->order_id)DB::table('orders')->where('id',$p->order_id)->update(['payment_status'=>'failed','updated_at'=>now()]);});}
+ public function refund(int $paymentId,float $amount,?string $reason=null):void{if($amount<=0)throw new RuntimeException('Invalid refund amount.');DB::transaction(function()use($paymentId,$amount,$reason){$p=DB::table('payments')->where('id',$paymentId)->lockForUpdate()->firstOrFail();if($p->status!=='paid')throw new RuntimeException('Only paid payments can be refunded.');$ref=(float)DB::table('payment_refunds')->where('payment_id',$paymentId)->where('status','completed')->sum('amount');if($ref+$amount>(float)$p->amount)throw new RuntimeException('Refund exceeds payment amount.');DB::table('payment_refunds')->insert(['payment_id'=>$paymentId,'amount'=>$amount,'reason'=>$reason,'status'=>'completed','created_at'=>now(),'updated_at'=>now()]);if($ref+$amount>=(float)$p->amount)DB::table('payments')->where('id',$paymentId)->update(['status'=>'refunded','updated_at'=>now()]);});}
 }
