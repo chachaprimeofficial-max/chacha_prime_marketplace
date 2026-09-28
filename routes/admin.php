@@ -1,28 +1,30 @@
 <?php
-
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\ReturnController;
 use Illuminate\Support\Facades\Route;
-
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard',[DashboardController::class,'index'])->name('dashboard');
-    Route::get('/products',[ProductController::class,'index'])->name('products.index');
-    Route::get('/products/create',[ProductController::class,'create'])->name('products.create');
-    Route::post('/products',[ProductController::class,'store'])->name('products.store');
-    Route::get('/products/{product}/edit',[ProductController::class,'edit'])->name('products.edit');
-    Route::put('/products/{product}',[ProductController::class,'update'])->name('products.update');
-    Route::post('/products/{product}/variations',[ProductController::class,'variationStore'])->name('products.variations.store');
-    Route::delete('/products/{product}/variations/{variation}',[ProductController::class,'variationDelete'])->name('products.variations.delete');
-    Route::post('/products/{product}/inventory',[ProductController::class,'inventory'])->name('products.inventory');
-    Route::post('/products/{product}/media',[ProductController::class,'mediaStore'])->name('products.media.store');
-    Route::delete('/products/{product}/media/{media}',[ProductController::class,'mediaDelete'])->name('products.media.delete');
-    Route::get('/orders',[OrderController::class,'index'])->name('orders.index');
-    Route::get('/orders/{order}',[OrderController::class,'show'])->name('orders.show');
-    Route::put('/orders/{order}',[OrderController::class,'update'])->name('orders.update');
-    Route::get('/returns',[ReturnController::class,'index'])->name('returns.index');
-    Route::post('/returns/{return}/approve',[ReturnController::class,'approve'])->name('returns.approve');
-    Route::post('/returns/{return}/reject',[ReturnController::class,'reject'])->name('returns.reject');
-    Route::post('/returns/{return}/refund',[ReturnController::class,'refund'])->name('returns.refund');
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function(){
+ Route::get('/dashboard',[DashboardController::class,'index'])->name('dashboard');
+ Route::get('/products',[ProductController::class,'index'])->name('products.index');
+ Route::get('/products/create',[ProductController::class,'create'])->name('products.create');
+ Route::post('/products',[ProductController::class,'store'])->name('products.store');
+ Route::get('/products/{product}/edit',[ProductController::class,'edit'])->name('products.edit');
+ Route::put('/products/{product}',[ProductController::class,'update'])->name('products.update');
+ Route::post('/products/{product}/variations',[ProductController::class,'variationStore'])->name('products.variations.store');
+ Route::delete('/products/{product}/variations/{variation}',[ProductController::class,'variationDelete'])->name('products.variations.delete');
+ Route::post('/products/{product}/inventory',[ProductController::class,'inventory'])->name('products.inventory');
+ Route::post('/products/{product}/media',[ProductController::class,'mediaStore'])->name('products.media.store');
+ Route::delete('/products/{product}/media/{media}',[ProductController::class,'mediaDelete'])->name('products.media.delete');
+ Route::get('/orders',[OrderController::class,'index'])->name('orders.index');
+ Route::get('/orders/{order}',[OrderController::class,'show'])->name('orders.show');
+ Route::put('/orders/{order}',[OrderController::class,'update'])->name('orders.update');
+ Route::get('/returns',[ReturnController::class,'index'])->name('returns.index');
+ Route::post('/returns/{return}/approve',[ReturnController::class,'approve'])->name('returns.approve');
+ Route::post('/returns/{return}/reject',[ReturnController::class,'reject'])->name('returns.reject');
+ Route::post('/returns/{return}/refund',[ReturnController::class,'refund'])->name('returns.refund');
+ Route::get('/reviews',[ReviewController::class,'index'])->name('reviews.index');
+ Route::put('/reviews/{review}',[ReviewController::class,'update'])->name('reviews.update');
+ Route::delete('/reviews/{review}',[ReviewController::class,'destroy'])->name('reviews.destroy');
 });
