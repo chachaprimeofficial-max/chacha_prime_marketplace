@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
+use App\Services\TotpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 class ProfileController extends Controller
 {
  public function profile(Request $r){return view('customer.profile',['user'=>$r->user()]);}
@@ -10,6 +12,9 @@ class ProfileController extends Controller
  public function addresses(Request $r){$addresses=DB::table('addresses')->where('user_id',$r->user()->id)->latest()->get();return view('customer.addresses',compact('addresses'));}
  public function addressStore(Request $r){$d=$r->validate(['label'=>'required|string|max:60','full_name'=>'required|string|max:120','phone'=>'required|string|max:40','address_line_1'=>'required|string|max:255','address_line_2'=>'nullable|string|max:255','city'=>'required|string|max:100','state'=>'nullable|string|max:100','postal_code'=>'nullable|string|max:30','country'=>'required|string|max:100','is_default'=>'nullable|boolean']);$uid=$r->user()->id;if(!empty($d['is_default']))DB::table('addresses')->where('user_id',$uid)->update(['is_default'=>0]);DB::table('addresses')->insert(array_merge($d,['user_id'=>$uid,'is_default'=>(int)($d['is_default']??0),'created_at'=>now(),'updated_at'=>now()]));return back()->with('success','Address saved.');}
  public function addressDelete(Request $r,int $address){DB::table('addresses')->where('id',$address)->where('user_id',$r->user()->id)->delete();return back()->with('success','Address removed.');}
- public function security(){return view('customer.security');}
- public function password(Request $r){$d=$r->validate(['current_password'=>'required','password'=>'required|string|min:8|confirmed']);abort_unless(\Hash::check($d['current_password'],$r->user()->password),422,'Current password is incorrect.');$r->user()->update(['password'=>\Hash::make($d['password'])]);return back()->with('success','Password updated.');}
+ public function security(Request $r){return view('customer.security',['twoFactorEnabled'=>(bool)$r->user()->two_factor_enabled]);}
+ public function password(Request $r){$d=$r->validate(['current_password'=>'required','password'=>'required|string|min:8|confirmed']);abort_unless(Hash::check($d['current_password'],$r->user()->password),422,'Current password is incorrect.');$r->user()->update(['password'=>Hash::make($d['password'])]);return back()->with('success','Password updated.');}
+ public function twoFactorSetup(Request $r,TotpService $totp){$secret=$totp->secret();$r->session()->put('pending_2fa_secret',$secret);return view('customer.two-factor-setup',['secret'=>$secret,'uri'=>$totp->provisioningUri($secret,$r->user()->email)]);}
+ public function twoFactorConfirm(Request $r,TotpService $totp){$d=$r->validate(['code'=>'required|string|size:6']);$secret=$r->session()->get('pending_2fa_secret');abort_unless($secret&&$totp->verify($secret,$d['code']),422,'Invalid authenticator code.');$r->user()->update(['two_factor_enabled'=>1,'two_factor_secret'=>encrypt($secret),'two_factor_confirmed_at'=>now()]);DB::table('two_factor_recovery_codes')->where('user_id',$r->user()->id)->delete();for($i=0;$i<8;$i++){ $raw=strtoupper(bin2hex(random_bytes(5)));DB::table('two_factor_recovery_codes')->insert(['user_id'=>$r->user()->id,'code_hash'=>Hash::make($raw),'created_at'=>now(),'updated_at'=>now()]);$codes[]=$raw; }$r->session()->forget('pending_2fa_secret');return view('customer.two-factor-recovery',['codes'=>$codes]);}
+ public function twoFactorDisable(Request $r,TotpService $totp){$d=$r->validate(['code'=>'required|string|size:6','current_password'=>'required']);abort_unless(Hash::check($d['current_password'],$r->user()->password),422,'Current password is incorrect.');$secret=$r->user()->two_factor_secret?decrypt($r->user()->two_factor_secret):null;abort_unless($secret&&$totp->verify($secret,$d['code']),422,'Invalid authenticator code.');$r->user()->update(['two_factor_enabled'=>0,'two_factor_secret'=>null,'two_factor_confirmed_at'=>null]);DB::table('two_factor_recovery_codes')->where('user_id',$r->user()->id)->delete();return back()->with('success','Two-factor authentication disabled.');}
 }
