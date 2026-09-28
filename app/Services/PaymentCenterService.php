@@ -1,0 +1,10 @@
+<?php
+namespace App\Services;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
+class PaymentCenterService
+{
+ public function create(int $orderId,?int $userId,string $provider,float $amount,string $currency='USD',?int $methodId=null):int{return DB::table('payment_transactions')->insertGetId(['order_id'=>$orderId,'user_id'=>$userId,'payment_method_id'=>$methodId,'provider'=>$provider,'transaction_reference'=>'CP-'.str()->upper(str()->random(20)),'amount'=>$amount,'currency'=>$currency,'status'=>'pending','created_at'=>now(),'updated_at'=>now()]);}
+ public function updateStatus(int $id,string $status,?string $providerReference=null,?string $failureCode=null,?string $failureMessage=null):void{DB::transaction(function()use($id,$status,$providerReference,$failureCode,$failureMessage){$allowed=['pending','authorized','paid','failed','cancelled','refunded','partially_refunded'];if(!in_array($status,$allowed,true))throw new RuntimeException('Invalid payment status.');$tx=DB::table('payment_transactions')->where('id',$id)->lockForUpdate()->firstOrFail();DB::table('payment_transactions')->where('id',$id)->update(['status'=>$status,'provider_reference'=>$providerReference?:$tx->provider_reference,'failure_code'=>$failureCode,'failure_message'=>$failureMessage,'paid_at'=>$status==='paid'?now():$tx->paid_at,'updated_at'=>now()]);if($status==='paid'&&$tx->order_id)DB::table('orders')->where('id',$tx->order_id)->update(['payment_status'=>'paid','updated_at'=>now()]);});}
+ public function receiveWebhook(string $provider,string $eventId,?string $eventType,array $payload):int{return DB::table('payment_webhooks')->insertGetId(['provider'=>$provider,'event_id'=>$eventId,'event_type'=>$eventType,'payload'=>json_encode($payload),'status'=>'received','created_at'=>now(),'updated_at'=>now()]);}
+}
