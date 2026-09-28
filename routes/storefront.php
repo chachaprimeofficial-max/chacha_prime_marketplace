@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Customer\AccountController;
 use App\Http\Controllers\Customer\NotificationController;
+use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Customer\ReturnController;
 use App\Http\Controllers\Customer\WalletController;
 use App\Http\Controllers\Customer\WishlistReviewController;
@@ -35,5 +36,12 @@ Route::middleware('auth')->group(function(){
   Route::post('/wishlist/{product}',[WishlistReviewController::class,'add'])->name('wishlist.add');
   Route::delete('/wishlist/{product}',[WishlistReviewController::class,'remove'])->name('wishlist.remove');
   Route::post('/products/{product}/review',[WishlistReviewController::class,'storeReview'])->name('reviews.store');
+  Route::get('/profile',[ProfileController::class,'profile'])->name('profile');
+  Route::put('/profile',[ProfileController::class,'update'])->name('profile.update');
+  Route::get('/addresses',[ProfileController::class,'addresses'])->name('addresses');
+  Route::post('/addresses',[ProfileController::class,'addressStore'])->name('addresses.store');
+  Route::delete('/addresses/{address}',[ProfileController::class,'addressDelete'])->name('addresses.delete');
+  Route::get('/security',[ProfileController::class,'security'])->name('security');
+  Route::put('/security/password',[ProfileController::class,'password'])->name('security.password');
  });
 });
