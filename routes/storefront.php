@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Customer\AccountController;
 use App\Http\Controllers\Customer\CheckoutPaymentController;
+use App\Http\Controllers\Customer\GroupBuyingController;
 use App\Http\Controllers\Customer\NotificationController;
 use App\Http\Controllers\Customer\PaymentResultController;
 use App\Http\Controllers\Customer\ProfileController;
@@ -23,34 +24,12 @@ Route::middleware('auth')->group(function(){
  Route::get('/checkout',[CheckoutController::class,'index'])->name('checkout.index');
  Route::post('/checkout/place',[CheckoutController::class,'place'])->name('checkout.place');
  Route::get('/checkout/success/{order}',[CheckoutController::class,'success'])->name('checkout.success');
+ Route::get('/group-buying',[GroupBuyingController::class,'index'])->name('customer.group-buying.index');
+ Route::get('/group-buying/{campaign}',[GroupBuyingController::class,'show'])->name('customer.group-buying.show');
+ Route::post('/group-buying/{campaign}/join',[GroupBuyingController::class,'join'])->name('customer.group-buying.join');
  Route::prefix('customer/checkout')->name('customer.checkout.')->group(function(){Route::get('/payment-methods',[CheckoutPaymentController::class,'methods'])->name('payment-methods');Route::post('/payment',[CheckoutPaymentController::class,'store'])->name('payment');});
  Route::get('/customer/payment/result/{payment}',[PaymentResultController::class,'show'])->name('customer.payment.result');
  Route::prefix('account')->name('customer.')->group(function(){
-  Route::get('/',[AccountController::class,'dashboard'])->name('dashboard');
-  Route::get('/orders',[AccountController::class,'orders'])->name('orders');
-  Route::get('/orders/{order}',[AccountController::class,'order'])->name('orders.show');
-  Route::post('/orders/{order}/cancel',[AccountController::class,'cancel'])->name('orders.cancel');
-  Route::get('/returns',[ReturnController::class,'index'])->name('returns');
-  Route::get('/orders/{order}/return',[ReturnController::class,'create'])->name('returns.create');
-  Route::post('/returns',[ReturnController::class,'store'])->name('returns.store');
-  Route::post('/returns/{return}/cancel',[ReturnController::class,'cancel'])->name('returns.cancel');
-  Route::get('/notifications',[NotificationController::class,'index'])->name('notifications');
-  Route::post('/notifications/{notification}/read',[NotificationController::class,'read'])->name('notifications.read');
-  Route::post('/notifications/read-all',[NotificationController::class,'readAll'])->name('notifications.read-all');
-  Route::get('/wallet',[WalletController::class,'index'])->name('wallet');
-  Route::get('/wishlist',[WishlistReviewController::class,'wishlist'])->name('wishlist');
-  Route::post('/wishlist/{product}',[WishlistReviewController::class,'add'])->name('wishlist.add');
-  Route::delete('/wishlist/{product}',[WishlistReviewController::class,'remove'])->name('wishlist.remove');
-  Route::post('/products/{product}/review',[WishlistReviewController::class,'storeReview'])->name('reviews.store');
-  Route::get('/profile',[ProfileController::class,'profile'])->name('profile');
-  Route::put('/profile',[ProfileController::class,'update'])->name('profile.update');
-  Route::get('/addresses',[ProfileController::class,'addresses'])->name('addresses');
-  Route::post('/addresses',[ProfileController::class,'addressStore'])->name('addresses.store');
-  Route::delete('/addresses/{address}',[ProfileController::class,'addressDelete'])->name('addresses.delete');
-  Route::get('/security',[ProfileController::class,'security'])->name('security');
-  Route::put('/security/password',[ProfileController::class,'password'])->name('security.password');
-  Route::get('/security/2fa/setup',[ProfileController::class,'twoFactorSetup'])->name('security.2fa.setup');
-  Route::post('/security/2fa/confirm',[ProfileController::class,'twoFactorConfirm'])->name('security.2fa.confirm');
-  Route::post('/security/2fa/disable',[ProfileController::class,'twoFactorDisable'])->name('security.2fa.disable');
+  Route::get('/',[AccountController::class,'dashboard'])->name('dashboard');Route::get('/orders',[AccountController::class,'orders'])->name('orders');Route::get('/orders/{order}',[AccountController::class,'order'])->name('orders.show');Route::post('/orders/{order}/cancel',[AccountController::class,'cancel'])->name('orders.cancel');Route::get('/returns',[ReturnController::class,'index'])->name('returns');Route::get('/orders/{order}/return',[ReturnController::class,'create'])->name('returns.create');Route::post('/returns',[ReturnController::class,'store'])->name('returns.store');Route::post('/returns/{return}/cancel',[ReturnController::class,'cancel'])->name('returns.cancel');Route::get('/notifications',[NotificationController::class,'index'])->name('notifications');Route::post('/notifications/{notification}/read',[NotificationController::class,'read'])->name('notifications.read');Route::post('/notifications/read-all',[NotificationController::class,'readAll'])->name('notifications.read-all');Route::get('/wallet',[WalletController::class,'index'])->name('wallet');Route::get('/wishlist',[WishlistReviewController::class,'wishlist'])->name('wishlist');Route::post('/wishlist/{product}',[WishlistReviewController::class,'add'])->name('wishlist.add');Route::delete('/wishlist/{product}',[WishlistReviewController::class,'remove'])->name('wishlist.remove');Route::post('/products/{product}/review',[WishlistReviewController::class,'storeReview'])->name('reviews.store');Route::get('/profile',[ProfileController::class,'profile'])->name('profile');Route::put('/profile',[ProfileController::class,'update'])->name('profile.update');Route::get('/addresses',[ProfileController::class,'addresses'])->name('addresses');Route::post('/addresses',[ProfileController::class,'addressStore'])->name('addresses.store');Route::delete('/addresses/{address}',[ProfileController::class,'addressDelete'])->name('addresses.delete');Route::get('/security',[ProfileController::class,'security'])->name('security');Route::put('/security/password',[ProfileController::class,'password'])->name('security.password');Route::get('/security/2fa/setup',[ProfileController::class,'twoFactorSetup'])->name('security.2fa.setup');Route::post('/security/2fa/confirm',[ProfileController::class,'twoFactorConfirm'])->name('security.2fa.confirm');Route::post('/security/2fa/disable',[ProfileController::class,'twoFactorDisable'])->name('security.2fa.disable');
  });
 });
