@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\ReturnController;
@@ -31,6 +32,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function(){
  Route::post('/payments/{payment}/verify',[PaymentController::class,'verify'])->name('payments.verify');
  Route::post('/payments/{payment}/fail',[PaymentController::class,'fail'])->name('payments.fail');
  Route::post('/payments/{payment}/refund',[PaymentController::class,'refund'])->name('payments.refund');
+ Route::get('/payment-methods',[PaymentMethodController::class,'index'])->name('payment-methods.index');
+ Route::post('/payment-methods',[PaymentMethodController::class,'store'])->name('payment-methods.store');
+ Route::put('/payment-methods/{method}',[PaymentMethodController::class,'update'])->name('payment-methods.update');
+ Route::patch('/payment-methods/{method}/toggle',[PaymentMethodController::class,'toggle'])->name('payment-methods.toggle');
  Route::get('/returns',[ReturnController::class,'index'])->name('returns.index');
  Route::post('/returns/{return}/approve',[ReturnController::class,'approve'])->name('returns.approve');
  Route::post('/returns/{return}/reject',[ReturnController::class,'reject'])->name('returns.reject');
