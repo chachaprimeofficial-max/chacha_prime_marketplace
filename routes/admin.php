@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
@@ -27,4 +28,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function(){
  Route::get('/reviews',[ReviewController::class,'index'])->name('reviews.index');
  Route::put('/reviews/{review}',[ReviewController::class,'update'])->name('reviews.update');
  Route::delete('/reviews/{review}',[ReviewController::class,'destroy'])->name('reviews.destroy');
+ Route::get('/customers',[CustomerController::class,'index'])->name('customers.index');
+ Route::get('/customers/{customer}',[CustomerController::class,'show'])->name('customers.show');
+ Route::put('/customers/{customer}/status',[CustomerController::class,'status'])->name('customers.status');
 });
