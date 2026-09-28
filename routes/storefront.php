@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Customer\AccountController;
+use App\Http\Controllers\Customer\NotificationController;
 use App\Http\Controllers\Customer\ReturnController;
 use App\Http\Controllers\Customer\WalletController;
 use App\Http\Controllers\Storefront\CartController;
@@ -27,6 +28,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders/{order}/return', [ReturnController::class, 'create'])->name('returns.create');
         Route::post('/returns', [ReturnController::class, 'store'])->name('returns.store');
         Route::post('/returns/{return}/cancel', [ReturnController::class, 'cancel'])->name('returns.cancel');
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
+        Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::get('/wallet', [WalletController::class, 'index'])->name('wallet');
     });
 });
