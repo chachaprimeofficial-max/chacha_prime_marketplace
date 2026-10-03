@@ -17,6 +17,7 @@ class InventoryService
         $after=$before-$quantity;
         if ($after<0) throw new RuntimeException('Insufficient stock.');
         DB::table($table)->where('id',$id)->update(['stock_qty'=>$after,'updated_at'=>now()]);
+        if($variantId) DB::table('products')->where('id',$productId)->decrement('stock_qty',$quantity);
         DB::table('inventory_movements')->insert(['product_id'=>$productId,'variant_id'=>$variantId,'type'=>'stock_out','quantity'=>-$quantity,'quantity_before'=>$before,'quantity_after'=>$after,'reference_type'=>$referenceType,'reference_id'=>$referenceId,'created_by'=>$userId,'created_at'=>now(),'updated_at'=>now()]);
         $this->syncAlert($productId,$variantId,$after,(int)($row->low_stock_threshold ?? DB::table('products')->where('id',$productId)->value('low_stock_threshold') ?? 5));
     }
