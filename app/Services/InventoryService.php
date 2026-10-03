@@ -18,6 +18,8 @@ class InventoryService
         if ($after<0) throw new RuntimeException('Insufficient stock.');
         DB::table($table)->where('id',$id)->update(['stock_qty'=>$after,'updated_at'=>now()]);
         if($variantId) DB::table('products')->where('id',$productId)->decrement('stock_qty',$quantity);
+        $aggregate=(int)DB::table('products')->where('id',$productId)->value('stock_qty');
+        if($aggregate<=0) DB::table('products')->where('id',$productId)->update(['status'=>'out_of_stock','updated_at'=>now()]);
         DB::table('inventory_movements')->insert(['product_id'=>$productId,'variant_id'=>$variantId,'type'=>'stock_out','quantity'=>-$quantity,'quantity_before'=>$before,'quantity_after'=>$after,'reference_type'=>$referenceType,'reference_id'=>$referenceId,'created_by'=>$userId,'created_at'=>now(),'updated_at'=>now()]);
         $this->syncAlert($productId,$variantId,$after,(int)($row->low_stock_threshold ?? DB::table('products')->where('id',$productId)->value('low_stock_threshold') ?? 5));
     }
@@ -29,6 +31,8 @@ class InventoryService
         $before=(int)$row->stock_qty;$after=$before+$quantity;
         DB::table($table)->where('id',$id)->update(['stock_qty'=>$after,'updated_at'=>now()]);
         if($variantId) DB::table('products')->where('id',$productId)->increment('stock_qty',$quantity);
+        $aggregate=(int)DB::table('products')->where('id',$productId)->value('stock_qty');
+        if($aggregate>0) DB::table('products')->where('id',$productId)->where('status','out_of_stock')->update(['status'=>'active','updated_at'=>now()]);
         DB::table('inventory_movements')->insert(['product_id'=>$productId,'variant_id'=>$variantId,'type'=>$type,'quantity'=>$quantity,'quantity_before'=>$before,'quantity_after'=>$after,'reference_type'=>$referenceType,'reference_id'=>$referenceId,'created_by'=>$userId,'created_at'=>now(),'updated_at'=>now()]);
         DB::table('inventory_alerts')->where('product_id',$productId)->where('status','open')->update(['status'=>'resolved','resolved_at'=>now()]);
     }
