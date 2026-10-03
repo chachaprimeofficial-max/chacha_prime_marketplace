@@ -43,7 +43,7 @@ class ProductController extends Controller
  public function variationStore(Request $request,int $product) {
   abort_unless(DB::table('products')->where('id',$product)->exists(),404);
   $d=$request->validate(['sku'=>'required|string|max:120|unique:product_variants,sku','attributes'=>'required|json','price'=>'nullable|numeric|min:0','wholesale_price'=>'nullable|numeric|min:0','group_price'=>'nullable|numeric|min:0','stock_qty'=>'required|integer|min:0']);
-  $d['product_id']=$product; $d['qr_value']=url('/products/'.$d['sku']); $d['created_at']=now(); $d['updated_at']=now();
+  $d['product_id']=$product; $d['qr_value']=url('/products/sku/'.rawurlencode($d['sku'])); $d['created_at']=now(); $d['updated_at']=now();
   DB::table('product_variants')->insert($d); $this->syncStock($product); return back()->with('success','Variant added.');
  }
  public function variationDelete(int $product,int $variation) { DB::table('product_variants')->where('id',$variation)->where('product_id',$product)->delete(); $this->syncStock($product); return back()->with('success','Variant removed.'); }
