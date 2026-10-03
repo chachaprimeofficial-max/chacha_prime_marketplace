@@ -13,10 +13,12 @@ class GroupBuyingService
    if($campaign->maximum_buyers!==null && (int)$campaign->current_buyers >= (int)$campaign->maximum_buyers) throw new RuntimeException('Group buying campaign is full.');
    if(DB::table('group_buying_orders')->where('campaign_id',$campaignId)->where('user_id',$userId)->whereIn('status',['pending','qualified'])->exists()) throw new RuntimeException('You have already joined this group.');
    $product=DB::table('products')->where('id',$campaign->product_id)->firstOrFail();
+   $variant=$campaign->variant_id?DB::table('product_variants')->where('id',$campaign->variant_id)->where('product_id',$product->id)->first():null;
+   if($campaign->variant_id&&!$variant) throw new RuntimeException('Group buying variant is no longer available.');
    $amount=(float)$campaign->group_price; if($amount<=0) throw new RuntimeException('Invalid group buying price.');
    $orderNumber='CP-GRP-'.strtoupper(Str::random(12));
    $orderId=DB::table('orders')->insertGetId(['order_number'=>$orderNumber,'user_id'=>$userId,'order_type'=>'group_buy','status'=>'pending','subtotal'=>$amount,'shipping_amount'=>0,'discount_amount'=>0,'tax_amount'=>0,'wallet_amount'=>$amount,'total_amount'=>$amount,'currency'=>config('chacha.brand.default_currency','USD'),'placed_at'=>now(),'created_at'=>now(),'updated_at'=>now()]);
-   DB::table('order_items')->insert(['order_id'=>$orderId,'product_id'=>$product->id,'variant_id'=>$campaign->variant_id,'sku'=>$product->sku,'product_title'=>$product->title,'quantity'=>1,'unit_price'=>$amount,'total_price'=>$amount,'created_at'=>now()]);
+   DB::table('order_items')->insert(['order_id'=>$orderId,'product_id'=>$product->id,'variant_id'=>$campaign->variant_id,'sku'=>$variant?$variant->sku:$product->sku,'product_title'=>$product->title,'quantity'=>1,'unit_price'=>$amount,'total_price'=>$amount,'created_at'=>now()]);
    $groupOrderId=DB::table('group_buying_orders')->insertGetId(['campaign_id'=>$campaignId,'order_id'=>$orderId,'user_id'=>$userId,'amount'=>$amount,'status'=>'pending','joined_at'=>now()]);
    app(WalletService::class)->debit($userId,$amount,'group_purchase','Immediate payment for group buying campaign #'.$campaignId,'group_buying_order',$groupOrderId);
    DB::table('payments')->insert(['order_id'=>$orderId,'provider'=>'wallet','method'=>'wallet','amount'=>$amount,'currency'=>config('chacha.brand.default_currency','USD'),'status'=>'paid','paid_at'=>now(),'created_at'=>now(),'updated_at'=>now()]);
