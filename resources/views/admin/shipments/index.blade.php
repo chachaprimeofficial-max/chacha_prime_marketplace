@@ -1,0 +1,14 @@
+@extends('layouts.admin')
+@section('content')
+<div class="mx-auto max-w-7xl space-y-6">
+<div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-bold uppercase tracking-[.2em] text-blue-600">Fulfillment</p><h1 class="text-3xl font-black">Shipments</h1><p class="mt-1 text-sm text-slate-500">Create shipments and track fulfillment status.</p></div></div>
+@if(session('success'))<div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">{{session('success')}}</div>@endif
+<form method="POST" action="{{route('admin.shipments.create')}}" class="grid gap-3 rounded-3xl border bg-white p-6 shadow-sm md:grid-cols-6">@csrf
+<input name="order_id" type="number" required placeholder="Order ID" class="rounded-xl border px-4 py-3"><input name="carrier" placeholder="Carrier" class="rounded-xl border px-4 py-3"><input name="service" placeholder="Service" class="rounded-xl border px-4 py-3"><input name="tracking_number" placeholder="Tracking number" class="rounded-xl border px-4 py-3"><input name="estimated_delivery_date" type="date" class="rounded-xl border px-4 py-3"><button class="rounded-xl bg-slate-950 px-4 py-3 font-bold text-white">Create Shipment</button>
+</form>
+<div class="overflow-x-auto overflow-hidden rounded-3xl border bg-white shadow-sm"><table class="w-full min-w-[900px] text-left text-sm"><thead class="bg-slate-50"><tr><th class="p-4">Shipment</th><th class="p-4">Order</th><th class="p-4">Carrier</th><th class="p-4">Tracking</th><th class="p-4">Status</th><th class="p-4">Update</th></tr></thead><tbody>
+@forelse($shipments as $s)<tr class="border-t"><td class="p-4 font-semibold">#{{$s->id}}</td><td class="p-4"><a class="text-blue-600 font-semibold" href="{{route('admin.orders.show',$s->order_id)}}">{{$s->order_number}}</a></td><td class="p-4">{{$s->carrier ?? '—'}}<div class="text-xs text-slate-500">{{$s->service ?? ''}}</div></td><td class="p-4 font-mono text-xs">{{$s->tracking_number ?? '—'}}</td><td class="p-4"><span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold">{{ucwords(str_replace('_',' ',$s->status))}}</span></td><td class="p-4"><form method="POST" action="{{route('admin.shipments.status',$s->id)}}" class="flex gap-2">@csrf @method('PATCH')<select name="status" class="rounded-lg border p-2">@foreach(['pending','packed','dispatched','in_transit','out_for_delivery','delivered','returned','exception'] as $st)<option value="{{$st}}" @selected($s->status===$st)>{{ucwords(str_replace('_',' ',$st))}}</option>@endforeach</select><button class="rounded-lg bg-slate-950 px-3 py-2 text-white">Save</button></form></td></tr>
+@empty<tr><td colspan="6" class="p-10 text-center text-slate-500">No shipments found.</td></tr>@endforelse
+</tbody></table></div>{{$shipments->links()}}
+</div>
+@endsection
