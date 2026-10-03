@@ -8,7 +8,7 @@ class AdminReportsService
   $orders=DB::table('orders')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59']);
   $revenue=(float)DB::table('payments')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59'])->whereIn('status',['paid','partially_refunded'])->sum('amount');
   $orderCount=(clone $orders)->count();
-  $refunds=0.0;
+  $refunds=(float)DB::table('payment_refunds')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59'])->sum('amount');
   $tax=(float)(clone $orders)->sum('tax_amount');
   $shipping=(float)(clone $orders)->sum('shipping_amount');
   $byPayment=DB::table('payments')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59'])->select('provider',DB::raw('COUNT(*) as transactions'),DB::raw('SUM(CASE WHEN status="paid" THEN amount ELSE 0 END) as paid_amount'))->groupBy('provider')->orderByDesc('paid_amount')->get();
