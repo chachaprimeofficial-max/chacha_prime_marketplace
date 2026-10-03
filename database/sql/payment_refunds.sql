@@ -14,3 +14,6 @@ CREATE TABLE IF NOT EXISTS payment_refunds (
  KEY payment_refunds_provider(provider_refund_id),
  CONSTRAINT fk_payment_refunds_payment FOREIGN KEY(payment_id) REFERENCES payments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE payment_refunds ADD COLUMN IF NOT EXISTS provider_refund_id VARCHAR(190) NULL;
+ALTER TABLE payment_refunds ADD KEY IF NOT EXISTS payment_refunds_provider(provider_refund_id);
