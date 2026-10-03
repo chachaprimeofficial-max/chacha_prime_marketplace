@@ -1,27 +1,15 @@
 @extends('layouts.storefront')
-
 @section('content')
-<section class="container mx-auto max-w-5xl px-4 py-10">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-        <div><p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Order tracking</p><h1 class="mt-2 text-3xl font-bold">{{ $order->order_number }}</h1></div>
-        <div class="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</div>
-    </div>
-    <div class="mt-8 rounded-3xl border bg-white p-6 shadow-sm">
-        <div class="space-y-7">
-            @php($steps = ['placed'=>'Order Placed','confirmed'=>'Confirmed','packing'=>'Packing','shipped'=>'Shipped','in_transit'=>'In Transit','delivered'=>'Delivered'])
-            @foreach($steps as $key => $label)
-                @php($done = $events->contains(fn($event) => $event->status === $key))
-                <div class="flex gap-4">
-                    <div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full {{ $done ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-400' }}">{{ $done ? '✓' : '•' }}</div>
-                    <div class="flex-1 border-b pb-5 last:border-0"><strong>{{ $label }}</strong>
-                        @if($event = $events->where('status', $key)->last())
-                            <p class="mt-1 text-sm text-slate-500">{{ $event->created_at }} @if($event->courier) · {{ $event->courier }} @endif @if($event->tracking_number) · {{ $event->tracking_number }} @endif</p>
-                            @if($event->note)<p class="mt-1 text-sm text-slate-600">{{ $event->note }}</p>@endif
-                        @endif
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
+<section class="mx-auto max-w-6xl px-4 py-10">
+<div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-bold uppercase tracking-[.2em] text-blue-600">Order tracking</p><h1 class="mt-2 text-3xl font-black">{{ $order->order_number }}</h1><p class="mt-1 text-sm text-slate-500">{{ $order->created_at }}</p></div><div class="rounded-full bg-slate-100 px-4 py-2 text-sm font-bold">{{ ucwords(str_replace('_',' ',$order->status)) }}</div></div>
+<div class="mt-7 grid gap-6 lg:grid-cols-3"><div class="space-y-6 lg:col-span-2">
+<div class="rounded-3xl border bg-white p-6 shadow-sm"><h2 class="text-xl font-black">Order progress</h2><div class="mt-6 space-y-5">
+@php($history=$events->keyBy('status')) @php($steps=['pending'=>'Order Placed','confirmed'=>'Confirmed','processing'=>'Processing','packing'=>'Packing','shipped'=>'Shipped','in_transit'=>'In Transit','out_for_delivery'=>'Out for Delivery','delivered'=>'Delivered'])
+@foreach($steps as $key=>$label) @php($event=$history->get($key))<div class="flex gap-4"><div class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full {{ $event ? 'bg-slate-950 text-white' : 'bg-slate-100 text-slate-400' }}">{{ $event ? '✓' : '•' }}</div><div class="flex-1 border-b pb-4"><div class="flex justify-between gap-2"><strong>{{ $label }}</strong>@if($event)<span class="text-xs text-slate-400">{{ $event->created_at }}</span>@endif</div>@if($event && $event->note)<p class="mt-1 text-sm text-slate-500">{{ $event->note }}</p>@endif</div></div>@endforeach
+@if(in_array($order->status,['cancelled','returned','refunded']))<div class="rounded-2xl bg-slate-50 p-4"><strong>{{ ucwords(str_replace('_',' ',$order->status)) }}</strong><p class="mt-1 text-sm text-slate-500">This order has reached its current final state.</p></div>@endif</div></div>
+<div class="rounded-3xl border bg-white p-6 shadow-sm"><h2 class="text-xl font-black">Items</h2><div class="mt-4 space-y-3">@forelse($items as $item)<div class="flex justify-between gap-4 rounded-2xl bg-slate-50 p-4"><div><b>{{ $item->product_title }}</b><p class="text-sm text-slate-500">SKU {{ $item->sku }} · Qty {{ $item->quantity }}</p></div><strong>{{ number_format($item->total_price,2) }} {{ $order->currency }}</strong></div>@empty<p class="text-sm text-slate-500">No items found.</p>@endforelse</div></div>
+</div><aside class="space-y-6"><div class="rounded-3xl border bg-white p-6 shadow-sm"><h2 class="font-black">Shipment</h2>@if($shipment)<p class="mt-3 font-bold">{{ $shipment->carrier ?: 'Chacha Prime Logistics' }}</p><p class="text-sm text-slate-500">{{ $shipment->service ?: 'Standard' }} · {{ ucwords(str_replace('_',' ',$shipment->status)) }}</p>@if($shipment->tracking_number)<p class="mt-3 rounded-xl bg-slate-50 p-3 text-sm">Tracking: <strong>{{ $shipment->tracking_number }}</strong></p>@endif@if($shipment->estimated_delivery_date)<p class="mt-3 text-sm text-slate-500">Estimated delivery: {{ $shipment->estimated_delivery_date }}</p>@endif<a href="{{ route('customer.orders.tracking',$order->id) }}" class="mt-4 block rounded-xl bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white">View shipment events</a>@else<p class="mt-3 text-sm text-slate-500">Shipment information will appear after dispatch.</p>@endif</div>
+<div class="rounded-3xl border bg-white p-6 shadow-sm"><h2 class="font-black">Payment</h2>@forelse($payments as $payment)<div class="mt-3 rounded-2xl bg-slate-50 p-4"><div class="flex justify-between gap-3"><b>{{ ucfirst($payment->provider) }}</b><span class="text-sm font-semibold">{{ ucfirst($payment->status) }}</span></div><p class="mt-1 text-sm text-slate-500">{{ number_format($payment->amount,2) }} {{ $payment->currency }}</p></div>@empty<p class="mt-3 text-sm text-slate-500">Payment information unavailable.</p>@endforelse</div>
+<div class="rounded-3xl border bg-white p-6 shadow-sm"><h2 class="font-black">Order total</h2><p class="mt-3 text-2xl font-black">{{ number_format($order->total_amount,2) }} {{ $order->currency }}</p><div class="mt-4 flex gap-2"><a href="{{ route('customer.invoices.show',$order->id) }}" class="flex-1 rounded-xl border px-3 py-2 text-center text-sm font-bold">Invoice</a><a href="{{ route('customer.returns.create',$order->id) }}" class="flex-1 rounded-xl bg-slate-950 px-3 py-2 text-center text-sm font-bold">Return</a></div></div></aside></div>
 </section>
 @endsection
