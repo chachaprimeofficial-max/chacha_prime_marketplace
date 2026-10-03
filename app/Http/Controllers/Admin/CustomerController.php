@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 class CustomerController extends Controller
 {
  public function index(Request $r){
-  $q=DB::table('users')->whereNotExists(function($x){$x->select(DB::raw(1))->from('user_roles')->join('roles','roles.id','=','user_roles.role_id')->whereColumn('user_roles.user_id','users.id')->whereIn('roles.name',['admin','staff']);});
+  $q=DB::table('users')->whereNotExists(function($x){$x->select(DB::raw(1))->from('admin_user_roles')->join('admin_roles','admin_roles.id','=','admin_user_roles.role_id')->whereColumn('admin_user_roles.user_id','users.id');});
   if($r->filled('search'))$q->where(fn($x)=>$x->where('name','like','%'.$r->search.'%')->orWhere('email','like','%'.$r->search.'%')->orWhere('phone','like','%'.$r->search.'%'));
   if($r->filled('status'))$q->where('status',$r->status);
   return view('admin.customers.index',['customers'=>$q->latest('id')->paginate(25)->withQueryString()]);
