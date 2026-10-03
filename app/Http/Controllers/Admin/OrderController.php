@@ -18,8 +18,8 @@ class OrderController extends Controller
     foreach(DB::table('order_items')->where('order_id',$order)->get() as $item) app(InventoryService::class)->restore((int)$item->product_id,$item->variant_id?(int)$item->variant_id:null,(int)$item->quantity,'cancel_restore','order',$order,$request->user()->id);
    }
    DB::table('orders')->where('id',$order)->update(['status'=>$data['status'],'updated_at'=>now()]);
+   $shipment=DB::table('shipments')->where('order_id',$order)->latest('id')->first();
    if(array_key_exists('tracking_number',$data)||array_key_exists('carrier',$data)||array_key_exists('service',$data)){
-    $shipment=DB::table('shipments')->where('order_id',$order)->latest('id')->first();
     $payload=['tracking_number'=>$data['tracking_number']??($shipment->tracking_number??null),'carrier'=>$data['carrier']??($shipment->carrier??null),'service'=>$data['service']??($shipment->service??null),'status'=>$data['status']==='delivered'?'delivered':($shipment->status??'pending'),'updated_at'=>now()];
     if($shipment) DB::table('shipments')->where('id',$shipment->id)->update($payload);
     else DB::table('shipments')->insert(array_merge(['order_id'=>$order,'created_at'=>now()],$payload));
