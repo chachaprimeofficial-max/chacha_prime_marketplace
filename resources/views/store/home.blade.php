@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.storefront')
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 <section class="overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-12 text-white sm:px-10 lg:px-14"><p class="text-xs font-bold uppercase tracking-[.3em] text-blue-300">Chacha Prime</p><h1 class="mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-6xl">Premium shopping for retail, wholesale and group buying.</h1><p class="mt-5 max-w-2xl text-slate-300">Discover products, compare buying options and unlock group prices from one secure marketplace.</p><div class="mt-8 flex flex-wrap gap-3"><a href="{{ url('/products') }}" class="rounded-2xl bg-white px-6 py-3 font-bold text-slate-950">Shop products</a><a href="{{ url('/categories') }}" class="rounded-2xl border border-white/20 px-6 py-3 font-bold">Browse categories</a></div></section>
