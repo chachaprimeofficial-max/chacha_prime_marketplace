@@ -309,7 +309,7 @@ CREATE TABLE IF NOT EXISTS group_buying_orders (
   order_id BIGINT UNSIGNED NOT NULL,
   user_id BIGINT UNSIGNED NOT NULL,
   amount DECIMAL(18,2) NOT NULL,
-  status ENUM('pending','qualified','refunded','cancelled') NOT NULL DEFAULT 'pending',
+  status ENUM('pending','qualified','confirmed','refunded','cancelled') NOT NULL DEFAULT 'pending',
   joined_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_group_order_campaign FOREIGN KEY(campaign_id) REFERENCES group_buying_campaigns(id) ON DELETE CASCADE,
   CONSTRAINT fk_group_order_order FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,
