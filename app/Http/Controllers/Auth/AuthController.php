@@ -68,10 +68,39 @@ class AuthController extends Controller
         $user=User::where('email',$data['email'])->first();
         if($user){
             $token=Str::random(64);
-            DB::table('password_reset_tokens')->updateOrInsert(['email'=>$user->email],['token'=>Hash::make($token),'created_at'=>now()]);
-            // Mail delivery should be wired to the configured mail provider before exposing reset links.
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email'=>$user->email],
+                ['token'=>Hash::make($token),'created_at'=>now()]
+            );
+            $url=url('/reset-password').'?token='.urlencode($token).'&email='.urlencode($user->email);
+            Mail::to($user->email)->send(new PasswordResetMail($url));
         }
-        return back()->with('status','If an account exists for that email, password reset instructions can be sent.');
+        return back()->with('status','If an account exists for that email, reset instructions have been sent.');
+    }
+    public function showReset(Request $request)
+    {
+        $data=$request->validate(['token'=>'required|string','email'=>'required|email']);
+        $row=DB::table('password_reset_tokens')->where('email',$data['email'])->first();
+        abort_unless($row && now()->diffInMinutes($row->created_at)<=60 && Hash::check($data['token'],$row->token), 403);
+        return view('auth.reset-password',['token'=>$data['token'],'email'=>$data['email']]);
+    }
+    public function reset(Request $request)
+    {
+        $data=$request->validate([
+            'token'=>'required|string','email'=>'required|email',
+            'password'=>['required','confirmed',Password::min(8)->mixedCase()->numbers()]
+        ]);
+        return DB::transaction(function() use($data,$request){
+            $row=DB::table('password_reset_tokens')->where('email',$data['email'])->lockForUpdate()->first();
+            if(!$row || now()->diffInMinutes($row->created_at)>60 || !Hash::check($data['token'],$row->token))
+                return back()->withErrors(['email'=>'This password reset link is invalid or expired.']);
+            $user=User::where('email',$data['email'])->lockForUpdate()->firstOrFail();
+            $user->password=$data['password']; $user->save();
+            DB::table('password_reset_tokens')->where('email',$data['email'])->delete();
+            Auth::logout();
+            $request->session()->invalidate(); $request->session()->regenerateToken();
+            return redirect()->route('login')->with('status','Your password has been reset. Please sign in again.');
+        });
     }
     private function event(?User $user,string $event):void
     {
