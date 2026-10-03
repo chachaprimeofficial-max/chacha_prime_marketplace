@@ -24,6 +24,7 @@ class PaymentWebhookController extends Controller
   $providerReference=$mapped['provider_reference']??$payload['provider_reference']??$payload['reference']??null;
   $paymentId=(int)($payload['payment_id']??0);
   if(!$paymentId&&$providerReference)$paymentId=(int)DB::table('payments')->where('provider',$provider)->where('provider_transaction_id',$providerReference)->latest('id')->value('id');
+  if(!$paymentId&&($mapped['transaction_reference']??null)){$ref=(string)$mapped['transaction_reference'];$paymentId=(int)DB::table('payments')->where('provider',$provider)->where(function($q)use($ref){$q->where('id',(int)$ref)->orWhere('provider_transaction_id',$ref);})->latest('id')->value('id');}
 
   $status=$mapped['status']??$payload['status']??null;
   if(!$paymentId||!in_array($status,['pending','authorized','paid','failed','cancelled','refunded','partially_refunded'],true)){
