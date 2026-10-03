@@ -1,4 +1,5 @@
 @extends('layouts.storefront')
+@section('title',$product->title.' | Chacha Prime')
 @section('content')
 <section class="container mx-auto px-4 py-8 md:py-12">
 <div class="grid gap-10 lg:grid-cols-2">
