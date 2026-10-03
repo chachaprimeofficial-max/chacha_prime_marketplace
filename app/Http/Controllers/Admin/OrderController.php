@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
- public function index(Request $request){$q=DB::table('orders')->orderByDesc('id');if($request->filled('status'))$q->where('status',$request->status);if($request->filled('search'))$q->where('order_number','like','%'.$request->search.'%');return view('admin.orders.index',['orders'=>$q->paginate(25)->withQueryString()]);}
+ public function index(Request $request){$q=DB::table('orders')->orderByDesc('id');if($request->filled('status'))$q->where('status',$request->status);if($request->filled('search'))$q->where(function($x)use($request){$x->where('order_number','like','%'.$request->search.'%')->orWhere('id',$request->search);});return view('admin.orders.index',['orders'=>$q->paginate(25)->withQueryString()]);}
  public function show(int $order){$item=DB::table('orders')->where('id',$order)->firstOrFail();$items=DB::table('order_items')->where('order_id',$order)->get();$payments=DB::table('payments')->where('order_id',$order)->latest()->get();$shipment=DB::table('shipments')->where('order_id',$order)->latest('id')->first();return view('admin.orders.show',compact('item','items','payments','shipment'));}
  public function update(Request $request,int $order){
   $data=$request->validate(['status'=>'required|in:pending,confirmed,processing,packing,shipped,in_transit,out_for_delivery,delivered,cancelled,returned,refunded','tracking_number'=>'nullable|string|max:190','carrier'=>'nullable|string|max:120','service'=>'nullable|string|max:120']);
