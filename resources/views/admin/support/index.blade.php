@@ -1,0 +1,2 @@
+@extends('layouts.admin')
+@section('content')<div class="p-6"><h1 class="text-3xl font-black">Support tickets</h1><div class="mt-6 space-y-3">@foreach($tickets as $t)<a href="{{route('admin.support.show',$t->id)}}" class="block rounded-2xl border bg-white p-5"><div class="flex justify-between"><b>{{$t->ticket_number}}</b><span>{{$t->status}}</span></div><p>{{$t->subject}}</p><p class="text-sm text-slate-500">{{$t->name}} · {{$t->email}}</p></a>@endforeach{{$tickets->links()}}</div></div>@endsection
