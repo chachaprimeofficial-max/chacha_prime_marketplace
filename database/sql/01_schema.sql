@@ -1,4 +1,6 @@
--- Chacha Prime Marketplace — initial manual-import SQL schema
+-- Chacha Prime Marketplace — canonical base manual-import SQL schema
+-- Legacy returns_requests, shipping_shipments and invoices definitions were removed.
+-- Import their canonical definitions from returns_refunds.sql, shipping_fulfillment.sql and invoices_tax.sql.
 -- No Laravel migrations are used.
 -- MySQL 8+ recommended.
 
@@ -342,32 +344,6 @@ CREATE TABLE IF NOT EXISTS order_status_history (
   INDEX idx_order_history_order_created(order_id,created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS returns_requests (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT UNSIGNED NOT NULL,
-  order_item_id BIGINT UNSIGNED NULL,
-  user_id BIGINT UNSIGNED NOT NULL,
-  type ENUM('refund','replacement') NOT NULL,
-  reason VARCHAR(255) NOT NULL,
-  description TEXT NULL,
-  shipping_label_path VARCHAR(500) NULL,
-  status ENUM('pending','approved','rejected','received','completed') NOT NULL DEFAULT 'pending',
-  created_at DATETIME NULL,
-  updated_at DATETIME NULL,
-  CONSTRAINT fk_returns_order FOREIGN KEY(order_id) REFERENCES orders(id),
-  CONSTRAINT fk_returns_item FOREIGN KEY(order_item_id) REFERENCES order_items(id) ON DELETE SET NULL,
-  CONSTRAINT fk_returns_user FOREIGN KEY(user_id) REFERENCES users(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS return_media (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  return_request_id BIGINT UNSIGNED NOT NULL,
-  type ENUM('image','video') NOT NULL,
-  path VARCHAR(500) NOT NULL,
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_return_media_request FOREIGN KEY(return_request_id) REFERENCES returns_requests(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS reviews (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
@@ -392,35 +368,6 @@ CREATE TABLE IF NOT EXISTS wishlist_items (
   PRIMARY KEY(user_id,product_id),
   CONSTRAINT fk_wishlist_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_wishlist_product FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS shipping_shipments (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT UNSIGNED NOT NULL,
-  courier VARCHAR(100) NOT NULL,
-  service VARCHAR(100) NULL,
-  tracking_number VARCHAR(190) NULL,
-  status VARCHAR(80) NULL,
-  shipped_at DATETIME NULL,
-  delivered_at DATETIME NULL,
-  tracking_url VARCHAR(500) NULL,
-  created_at DATETIME NULL,
-  updated_at DATETIME NULL,
-  CONSTRAINT fk_shipments_order FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE,
-  INDEX idx_shipments_tracking(tracking_number)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS invoices (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT UNSIGNED NOT NULL UNIQUE,
-  invoice_number VARCHAR(80) NOT NULL UNIQUE,
-  qr_value VARCHAR(255) NOT NULL UNIQUE,
-  qr_path VARCHAR(500) NULL,
-  pdf_path VARCHAR(500) NULL,
-  issued_at DATETIME NULL,
-  created_at DATETIME NULL,
-  updated_at DATETIME NULL,
-  CONSTRAINT fk_invoices_order FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS support_tickets (
