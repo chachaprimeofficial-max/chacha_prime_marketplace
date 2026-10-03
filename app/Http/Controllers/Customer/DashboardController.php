@@ -11,6 +11,8 @@ class DashboardController extends Controller
   $wallet=(float)(DB::table('wallets')->where('user_id',$uid)->value('balance')??0);
   $shipments=DB::table('shipments')->join('orders','orders.id','=','shipments.order_id')->where('orders.user_id',$uid)->whereNotIn('shipments.status',['delivered','returned'])->select('shipments.*','orders.order_number')->latest('shipments.id')->limit(5)->get();
   $notifications=DB::table('notifications')->where('user_id',$uid)->latest()->limit(6)->get();
-  return view('customer.dashboard',compact('stats','orders','wallet','shipments','notifications'));
+  $wishlist=DB::table('wishlist_items')->where('user_id',$uid)->count();
+  $unreadNotifications=DB::table('notifications')->where('user_id',$uid)->where('read_at',null)->count();
+  return view('customer.dashboard',compact('stats','orders','wallet','shipments','notifications','wishlist','unreadNotifications'));
  }
 }
