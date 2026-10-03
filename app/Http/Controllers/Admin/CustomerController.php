@@ -21,7 +21,7 @@ class CustomerController extends Controller
   return view('admin.customers.show',compact('user','orders','wallet','returns','reviews','addresses'));
  }
  public function status(Request $r,int $customer){
-  $d=$r->validate(['status'=>'required|in:active,blocked,pending']);
+  $d=$r->validate(['status'=>'required|in:active,blocked,pending,suspended']);
   $user=DB::table('users')->where('id',$customer)->firstOrFail();
   $isStaff=DB::table('admin_user_roles')->join('admin_roles','admin_roles.id','=','admin_user_roles.role_id')->where('admin_user_roles.user_id',$customer)->exists();
   abort_if($isStaff,403);
