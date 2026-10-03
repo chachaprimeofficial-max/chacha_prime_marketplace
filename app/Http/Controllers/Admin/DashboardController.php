@@ -7,7 +7,6 @@ class DashboardController extends Controller
 {
  public function index(): View
  {
-  abort_unless(auth()->check() && in_array((int)auth()->id(),array_map('intval',config('chacha.admin_user_ids',[])),true),403);
   $stats=[
    'orders_today'=>DB::table('orders')->whereDate('created_at',today())->count(),
    'orders_total'=>DB::table('orders')->count(),
