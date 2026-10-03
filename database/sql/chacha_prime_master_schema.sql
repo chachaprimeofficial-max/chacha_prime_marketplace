@@ -1,4 +1,5 @@
--- Chacha Prime Master SQL Schema
+-- LEGACY SCHEMA — DO NOT IMPORT FOR CURRENT CHACHA PRIME
+-- Current canonical manual-import schema is database/sql/01_schema.sql plus the documented SQL add-ons.
 -- Manual MySQL import. No Laravel migrations.
 CREATE DATABASE IF NOT EXISTS `u293300332_chacha` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `u293300332_chacha`;
