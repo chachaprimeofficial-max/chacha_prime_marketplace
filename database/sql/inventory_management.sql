@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS inventory_movements (
  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
  product_id BIGINT UNSIGNED NOT NULL,
- variation_id BIGINT UNSIGNED NULL,
+ variant_id BIGINT UNSIGNED NULL,
  type ENUM('stock_in','stock_out','adjustment','reservation','release','return','cancel_restore') NOT NULL,
  quantity INT NOT NULL,
  quantity_before INT NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
  updated_at TIMESTAMP NULL,
  PRIMARY KEY(id),
  KEY inventory_product_index(product_id),
- KEY inventory_variation_index(variation_id),
+ KEY inventory_variant_index(variant_id),
  KEY inventory_reference_index(reference_type,reference_id),
  KEY inventory_created_index(created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -29,7 +29,7 @@ ALTER TABLE products
 CREATE TABLE IF NOT EXISTS inventory_alerts (
  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
  product_id BIGINT UNSIGNED NOT NULL,
- variation_id BIGINT UNSIGNED NULL,
+ variant_id BIGINT UNSIGNED NULL,
  alert_type ENUM('low_stock','out_of_stock') NOT NULL,
  status ENUM('open','resolved') NOT NULL DEFAULT 'open',
  created_at TIMESTAMP NULL,
