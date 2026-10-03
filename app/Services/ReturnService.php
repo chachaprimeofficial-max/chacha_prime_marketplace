@@ -21,7 +21,7 @@ class ReturnService
                 ->whereExists(function($q) use ($orderItemId){$q->select(DB::raw(1))->from('return_items')->whereColumn('return_items.return_id','returns.id')->where('return_items.order_item_id',$orderItemId);})->exists();
             if ($active) throw new RuntimeException('A return is already in progress for this item.');
             $returnId=DB::table('returns')->insertGetId([
-                'user_id'=>$userId,'order_id'=>$orderId,'reason'=>$reason,'description'=>$reason,
+                'user_id'=>$userId,'type'=>$type,'order_id'=>$orderId,'reason'=>$reason,'description'=>$reason,
                 'evidence'=>json_encode(['media'=>$media,'shipping_label'=>$shippingLabel]),'status'=>'requested',
                 'refund_method'=>$type==='refund'?'wallet':null,'refund_amount'=>$type==='refund'?(float)$item->total_price:0,
                 'requested_at'=>now(),'created_at'=>now(),'updated_at'=>now()
