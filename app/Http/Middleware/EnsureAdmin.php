@@ -16,6 +16,20 @@ class EnsureAdmin
             ->join('admin_roles as ar','ar.id','=','aur.role_id')
             ->where('aur.user_id',$user->id)->exists();
         abort_unless($isAdmin,403,'Administrator access is required.');
+        $routeName=$request->route()?->getName();
+        $hasPermissionAssignments=DB::table('admin_user_roles as aur')
+            ->join('admin_role_permissions as arp','arp.role_id','=','aur.role_id')
+            ->join('admin_permissions as ap','ap.id','=','arp.permission_id')
+            ->where('aur.user_id',$user->id)->exists();
+        if ($hasPermissionAssignments && $routeName) {
+            $allowed=DB::table('admin_user_roles as aur')
+                ->join('admin_role_permissions as arp','arp.role_id','=','aur.role_id')
+                ->join('admin_permissions as ap','ap.id','=','arp.permission_id')
+                ->where('aur.user_id',$user->id)
+                ->where(function($q)use($routeName){$q->where('ap.permission_key',$routeName)->orWhere('ap.permission_key','admin.*');})
+                ->exists();
+            abort_unless($allowed,403,'This administrator role is not authorized for this action.');
+        }
         if (!$request->isMethod('GET') && !$request->isMethod('HEAD')) {
             DB::table('admin_audit_logs')->insert([
                 'user_id'=>$user->id,
