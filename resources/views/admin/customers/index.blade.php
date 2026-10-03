@@ -1,10 +1,11 @@
 @extends('layouts.admin')
 @section('content')
 <div class="mx-auto max-w-7xl space-y-6">
-<h1 class="text-3xl font-black">Customer Management</h1>
-<form><input name="search" value="{{ request('search') }}" placeholder="Search customers" class="rounded-xl border px-4 py-3"><button class="rounded-xl bg-slate-950 px-5 py-3 text-white">Search</button></form>
-<div class="overflow-hidden rounded-3xl border bg-white"><table class="w-full text-left text-sm"><thead><tr><th class="p-4">Customer</th><th class="p-4">Status</th><th class="p-4">2FA</th><th class="p-4">Action</th></tr></thead><tbody>
-@foreach($customers as $c)<tr class="border-t"><td class="p-4"><b>{{ $c->name }}</b><div>{{ $c->email }}</div></td><td class="p-4">{{ ucfirst($c->status ?? 'active') }}</td><td class="p-4">{{ !empty($c->two_factor_enabled) ? 'Enabled' : 'Off' }}</td><td class="p-4"><a href="{{ route('admin.customers.show',$c->id) }}">View</a></td></tr>@endforeach
-</tbody></table></div>{{ $customers->links() }}
+<div><p class="text-xs font-bold uppercase tracking-[.2em] text-blue-600">Customer Care</p><h1 class="text-3xl font-black">Customer Management</h1></div>
+@if(session('success'))<div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">{{session('success')}}</div>@endif
+<form class="flex flex-wrap gap-3 rounded-2xl border bg-white p-4 shadow-sm"><input name="search" value="{{request('search')}}" placeholder="Search name, email or phone" class="min-w-[260px] flex-1 rounded-xl border px-4 py-3"><select name="status" class="rounded-xl border px-4 py-3"><option value="">All statuses</option>@foreach(['active','pending','suspended','blocked'] as $status)<option value="{{$status}}" @selected(request('status')===$status)>{{ucfirst($status)}}</option>@endforeach</select><button class="rounded-xl bg-slate-950 px-5 py-3 font-bold text-white">Filter</button>@if(request()->hasAny(['search','status']))<a href="{{route('admin.customers.index')}}" class="rounded-xl border px-5 py-3 font-semibold">Reset</a>@endif</form>
+<div class="overflow-x-auto overflow-hidden rounded-3xl border bg-white shadow-sm"><table class="w-full min-w-[760px] text-left text-sm"><thead class="bg-slate-50"><tr><th class="p-4">Customer</th><th class="p-4">Phone</th><th class="p-4">Status</th><th class="p-4">2FA</th><th class="p-4">Action</th></tr></thead><tbody>
+@forelse($customers as $c)<tr class="border-t"><td class="p-4"><b>{{ $c->name }}</b><div class="text-slate-500">{{$c->email}}</div></td><td class="p-4">{{$c->phone ?? '—'}}</td><td class="p-4"><span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold">{{ucfirst($c->status ?? 'active')}}</span></td><td class="p-4">{{!empty($c->two_factor_enabled)?'Enabled':'Off'}}</td><td class="p-4"><a class="font-semibold text-blue-600" href="{{route('admin.customers.show',$c->id)}}">View profile</a></td></tr>@empty<tr><td colspan="5" class="p-10 text-center text-slate-500">No customers match these filters.</td></tr>@endforelse
+</tbody></table></div>{{$customers->links()}}
 </div>
 @endsection
