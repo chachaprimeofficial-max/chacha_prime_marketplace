@@ -11,3 +11,6 @@ Route::post('/register', [\App\Http\Controllers\Auth\AuthController::class,'regi
 Route::post('/logout', [\App\Http\Controllers\Auth\AuthController::class,'logout'])->middleware('auth')->name('logout');
 Route::get('/forgot-password', [\App\Http\Controllers\Auth\AuthController::class,'showForgot'])->name('password.request');
 Route::post('/forgot-password', [\App\Http\Controllers\Auth\AuthController::class,'sendReset'])->name('password.email');
+
+Route::get('/reset-password', [\App\Http\Controllers\Auth\AuthController::class,'showReset'])->name('password.reset');
+Route::post('/reset-password', [\App\Http\Controllers\Auth\AuthController::class,'reset'])->name('password.update');
