@@ -28,6 +28,7 @@ class InventoryService
         $row=DB::table($table)->where('id',$id)->lockForUpdate()->first();if(!$row)return;
         $before=(int)$row->stock_qty;$after=$before+$quantity;
         DB::table($table)->where('id',$id)->update(['stock_qty'=>$after,'updated_at'=>now()]);
+        if($variantId) DB::table('products')->where('id',$productId)->increment('stock_qty',$quantity);
         DB::table('inventory_movements')->insert(['product_id'=>$productId,'variant_id'=>$variantId,'type'=>$type,'quantity'=>$quantity,'quantity_before'=>$before,'quantity_after'=>$after,'reference_type'=>$referenceType,'reference_id'=>$referenceId,'created_by'=>$userId,'created_at'=>now(),'updated_at'=>now()]);
         DB::table('inventory_alerts')->where('product_id',$productId)->where('status','open')->update(['status'=>'resolved','resolved_at'=>now()]);
     }
