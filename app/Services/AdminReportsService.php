@@ -6,9 +6,9 @@ class AdminReportsService
  public function summary(?string $from=null,?string $to=null):array{
   $from=$from?:now()->startOfMonth()->toDateString();$to=$to?:now()->toDateString();
   $orders=DB::table('orders')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59']);
-  $revenue=(float)(clone $orders)->whereIn('payment_status',['paid','partially_refunded'])->sum('total_amount');
+  $revenue=(float)DB::table('payments')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59'])->whereIn('status',['paid','partially_refunded'])->sum('amount');
   $orderCount=(clone $orders)->count();
-  $refunds=(float)DB::table('payment_refunds')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59'])->whereIn('status',['pending','processed'])->sum('amount');
+  $refunds=0.0;
   $tax=(float)(clone $orders)->sum('tax_amount');
   $shipping=(float)(clone $orders)->sum('shipping_amount');
   $byPayment=DB::table('payments')->whereBetween('created_at',[$from.' 00:00:00',$to.' 23:59:59'])->select('provider',DB::raw('COUNT(*) as transactions'),DB::raw('SUM(CASE WHEN status="paid" THEN amount ELSE 0 END) as paid_amount'))->groupBy('provider')->orderByDesc('paid_amount')->get();
