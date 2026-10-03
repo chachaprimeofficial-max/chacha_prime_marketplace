@@ -3,7 +3,7 @@
 <div class="min-h-screen bg-slate-50 px-4 py-8 sm:py-12"><div class="mx-auto max-w-7xl">
 <div class="mb-8 flex flex-col gap-2"><span class="text-xs font-black uppercase tracking-[.22em] text-blue-600">Chacha Prime</span><h1 class="text-3xl font-black tracking-tight sm:text-4xl">Secure Checkout</h1><p class="text-sm text-slate-500">Complete your delivery and payment details.</p></div>
 @if($errors->any())<div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><b>Please check the following:</b><ul class="mt-2 list-disc pl-5">@foreach($errors->all() as $error)<li>{{$error}}</li>@endforeach</ul></div>@endif
-<form method="POST" action="{{route('checkout.place')}}" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]" id="checkout-form">@csrf<input type="hidden" name="country_code" value="{{strtoupper($country_code)}}">
+<form method="POST" action="{{route('checkout.place')}}" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px]" id="checkout-form">@csrf<input type="hidden" name="country_code" id="country_code" value="{{strtoupper($country_code)}}">
 <div class="space-y-6">
 <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
 <div class="flex items-center gap-3"><span class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-950 text-sm font-black text-white">1</span><div><h2 class="text-lg font-black">Delivery address</h2><p class="text-xs text-slate-500">Select a saved address from your account.</p></div></div>
