@@ -32,7 +32,9 @@ class CartController extends Controller
     {
         $data = $request->validate(['items'=>'required|array','items.*.key'=>'required|string','items.*.quantity'=>'required|integer|min:0|max:99']);
         $cart=$request->session()->get('chacha_cart',[]);
-        foreach($data['items'] as $item){ if(!isset($cart[$item['key']])) continue; if((int)$item['quantity']===0){unset($cart[$item['key']]);continue;} $row=$cart[$item['key']]; $stock=$row['variant_id'] ? (int)DB::table('product_variants')->where('id',$row['variant_id'])->value('stock_qty') : (int)DB::table('products')->where('id',$row['product_id'])->value('stock_qty'); $row['quantity']=min($stock,(int)$item['quantity']); $cart[$item['key']]=$row; }
+        foreach($data['items'] as $item){ if(!isset($cart[$item['key']])) continue; if((int)$item['quantity']===0){unset($cart[$item['key']]);continue;} $row=$cart[$item['key']]; $stock=$row['variant_id'] ? (int)DB::table('product_variants')->where('id',$row['variant_id'])->value('stock_qty') : (int)DB::table('products')->where('id',$row['product_id'])->value('stock_qty'); $requested=(int)$item['quantity'];
+        if($stock<1 || $requested<1){unset($cart[$item['key']]);continue;}
+        $row['quantity']=min($stock,$requested); $cart[$item['key']]=$row; }
         $request->session()->put('chacha_cart',$cart); return back()->with('success','Cart updated.');
     }
 
@@ -41,7 +43,7 @@ class CartController extends Controller
     private function cart(Request $request): array
     {
         $rows=[];$subtotal=0;$session=$request->session()->get('chacha_cart',[]);
-        foreach($session as $key=>$row){$product=Product::query()->where('id',$row['product_id'])->where('status','active')->first();if(!$product)continue;$variant=$row['variant_id']?DB::table('product_variants')->where('id',$row['variant_id'])->first():null;$price=(float)($variant?->price ?? $product->retail_price);$line=$price*(int)$row['quantity'];$subtotal+=$line;$rows[]=['key'=>$key,'product'=>$product,'variant'=>$variant,'quantity'=>$row['quantity'],'price'=>$price,'line_total'=>$line];}
+        foreach($session as $key=>$row){if((int)($row['quantity']??0)<1)continue;$product=Product::query()->where('id',$row['product_id'])->where('status','active')->first();if(!$product)continue;$variant=$row['variant_id']?DB::table('product_variants')->where('id',$row['variant_id'])->first():null;$price=(float)($variant?->price ?? $product->retail_price);$line=$price*(int)$row['quantity'];$subtotal+=$line;$rows[]=['key'=>$key,'product'=>$product,'variant'=>$variant,'quantity'=>$row['quantity'],'price'=>$price,'line_total'=>$line];}
         return ['items'=>$rows,'subtotal'=>$subtotal,'count'=>array_sum(array_column($rows,'quantity')),'discount'=>0,'shipping'=>0,'total'=>$subtotal];
     }
 }
