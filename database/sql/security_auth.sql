@@ -4,6 +4,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMP NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS remember_token VARCHAR(100) NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret TEXT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_confirmed_at DATETIME NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_recovery_codes TEXT NULL;
 
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
@@ -23,3 +24,13 @@ CREATE TABLE IF NOT EXISTS login_security_events (
  KEY security_user(user_id,created_at),
  CONSTRAINT fk_login_security_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS two_factor_recovery_codes (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ code_hash VARCHAR(255) NOT NULL,
+ used_at DATETIME NULL,
+ created_at DATETIME NULL,
+ updated_at DATETIME NULL,
+ KEY idx_2fa_recovery_user(user_id),
+ CONSTRAINT fk_2fa_recovery_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
