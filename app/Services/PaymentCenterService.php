@@ -19,7 +19,7 @@ class PaymentCenterService
     {
         $method=DB::table('payment_methods')->where('provider',$provider)->where('enabled',1)->first();
         if(!$method) throw new RuntimeException('Selected payment method is unavailable.');
-        return $this->create($orderId,$userId,$provider,$amount,$currency,(int)$method->id);
+        return app(PaymentService::class)->recordPending($orderId,$provider,(string)$method->name,$amount,null);
     }
 
     public function updateStatus(int $id,string $status,?string $providerReference=null,?string $failureCode=null,?string $failureMessage=null): void
