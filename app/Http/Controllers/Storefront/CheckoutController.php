@@ -125,6 +125,7 @@ class CheckoutController extends Controller
    $p=DB::table('products')->where('id',$row['product_id'])->where('status','active')->first();
    if(!$p)continue;
    $v=$row['variant_id']?DB::table('product_variants')->where('id',$row['variant_id'])->where('product_id',$p->id)->first():null;
+   if(!empty($row['variant_id']) && !$v) continue;
    $price=(float)($v?->price ?? $p->retail_price);
    $line=$price*(int)$row['quantity'];$subtotal+=$line;
    $rows[]=['key'=>$key,'product'=>$p,'variant'=>$v,'quantity'=>(int)$row['quantity'],'price'=>$price,'line_total'=>$line];
