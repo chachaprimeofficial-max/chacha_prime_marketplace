@@ -16,7 +16,7 @@ class ProductController extends Controller
   if($request->filled('status')) $query->where('products.status',$request->status);
   return view('admin.products.index',['products'=>$query->latest('products.id')->paginate(25)->withQueryString()]);
  }
- public function create(): View { return view('admin.products.form',['categories'=>DB::table('categories')->where('status','active')->orderBy('name')->get()]); }
+ public function create(): View { return view('admin.products.form',['categories'=>DB::table('categories')->where('status','active')->orderBy('name')->get(),'brands'=>DB::table('brands')->where('status','active')->orderBy('name')->get()]); }
  public function store(Request $request, ProductQrService $qr) {
   $data=$this->validated($request);
   $data['product_code']='CP-'.strtoupper(Str::random(10));
@@ -28,10 +28,10 @@ class ProductController extends Controller
  }
  public function edit(int $product): View {
   $item=DB::table('products')->where('id',$product)->first(); abort_unless($item,404);
-  $categories=DB::table('categories')->where('status','active')->orderBy('name')->get();
+  $categories=DB::table('categories')->where('status','active')->orderBy('name')->get(); $brands=DB::table('brands')->where('status','active')->orderBy('name')->get();
   $variations=DB::table('product_variants')->where('product_id',$product)->orderBy('id')->get();
   $media=DB::table('product_media')->where('product_id',$product)->orderBy('sort_order')->get();
-  return view('admin.products.form',compact('item','categories','variations','media'));
+  return view('admin.products.form',compact('item','categories','brands','variations','media'));
  }
  public function update(Request $request,int $product,ProductQrService $qr) {
   $item=DB::table('products')->where('id',$product)->first(); abort_unless($item,404);
@@ -56,6 +56,6 @@ class ProductController extends Controller
  public function mediaDelete(int $product,int $media) { DB::table('product_media')->where('id',$media)->where('product_id',$product)->delete(); return back()->with('success','Media removed.'); }
  private function syncStock(int $product): void { $sum=(int)DB::table('product_variants')->where('product_id',$product)->sum('stock_qty'); DB::table('products')->where('id',$product)->update(['stock_qty'=>$sum,'status'=>$sum===0?'out_of_stock':'active','updated_at'=>now()]); }
  private function validated(Request $request,?int $product=null): array {
-  return $request->validate(['title'=>'required|string|max:255','sku'=>'required|string|max:100|unique:products,sku'.($product?','.$product:''),'short_description'=>'nullable|string','description'=>'nullable|string','retail_price'=>'required|numeric|min:0','wholesale_price'=>'nullable|numeric|min:0','group_price'=>'nullable|numeric|min:0','cost_price'=>'nullable|numeric|min:0','stock_qty'=>'required|integer|min:0','low_stock_threshold'=>'nullable|integer|min:0','brand_id'=>'nullable|integer','category_id'=>'nullable|integer','status'=>'required|in:draft,active,inactive,out_of_stock,archived','ship_from'=>'nullable|string|max:150']);
+  return $request->validate(['title'=>'required|string|max:255','sku'=>'required|string|max:100|unique:products,sku'.($product?','.$product:''),'short_description'=>'nullable|string','description'=>'nullable|string','retail_price'=>'required|numeric|min:0','wholesale_price'=>'nullable|numeric|min:0','group_price'=>'nullable|numeric|min:0','cost_price'=>'nullable|numeric|min:0','stock_qty'=>'required|integer|min:0','low_stock_threshold'=>'nullable|integer|min:0','brand_id'=>'nullable|integer|exists:brands,id','category_id'=>'nullable|integer|exists:categories,id','status'=>'required|in:draft,active,inactive,out_of_stock,archived','ship_from'=>'nullable|string|max:150']);
  }
 }
