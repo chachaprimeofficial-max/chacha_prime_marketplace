@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified_at DATETIME NULL,
   two_factor_enabled TINYINT(1) NOT NULL DEFAULT 0,
   two_factor_secret TEXT NULL,
+  two_factor_confirmed_at DATETIME NULL,
   status ENUM('active','blocked','pending') NOT NULL DEFAULT 'active',
   created_at DATETIME NULL,
   updated_at DATETIME NULL
