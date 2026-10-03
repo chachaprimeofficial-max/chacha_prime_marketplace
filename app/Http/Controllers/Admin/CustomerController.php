@@ -15,7 +15,7 @@ class CustomerController extends Controller
   $user=DB::table('users')->where('id',$customer)->firstOrFail();
   $orders=DB::table('orders')->where('user_id',$customer)->latest()->limit(20)->get();
   $wallet=DB::table('wallets')->where('user_id',$customer)->first();
-  $returns=DB::table('returns_requests')->where('user_id',$customer)->latest()->limit(20)->get();
+  $returns=DB::table('returns')->where('user_id',$customer)->latest()->limit(20)->get();
   $reviews=DB::table('reviews')->where('user_id',$customer)->latest()->limit(20)->get();
   $addresses=DB::table('addresses')->where('user_id',$customer)->latest()->get();
   return view('admin.customers.show',compact('user','orders','wallet','returns','reviews','addresses'));
@@ -23,7 +23,7 @@ class CustomerController extends Controller
  public function status(Request $r,int $customer){
   $d=$r->validate(['status'=>'required|in:active,blocked,pending']);
   $user=DB::table('users')->where('id',$customer)->firstOrFail();
-  $isStaff=DB::table('user_roles')->join('roles','roles.id','=','user_roles.role_id')->where('user_roles.user_id',$customer)->whereIn('roles.name',['admin','staff'])->exists();
+  $isStaff=DB::table('admin_user_roles')->join('admin_roles','admin_roles.id','=','admin_user_roles.role_id')->where('admin_user_roles.user_id',$customer)->exists();
   abort_if($isStaff,403);
   DB::table('users')->where('id',$customer)->update(['status'=>$d['status'],'updated_at'=>now()]);
   return back()->with('success','Customer status updated.');
