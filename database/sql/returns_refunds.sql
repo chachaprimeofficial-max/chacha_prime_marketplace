@@ -48,3 +48,5 @@ CREATE TABLE IF NOT EXISTS refund_transactions (
  KEY refund_return(return_id,status),
  CONSTRAINT fk_refund_transactions_return FOREIGN KEY(return_id) REFERENCES returns(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE returns ADD COLUMN IF NOT EXISTS type ENUM('refund','replacement') NOT NULL DEFAULT 'refund' AFTER user_id;
+ALTER TABLE returns MODIFY COLUMN status ENUM('requested','approved','rejected','received','inspected','refunded','closed','cancelled') NOT NULL DEFAULT 'requested';
