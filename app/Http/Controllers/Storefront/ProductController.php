@@ -42,6 +42,8 @@ class ProductController extends Controller
         return view('storefront.products.index', compact('products', 'categories'));
     }
 
+    public function showBySku(string $sku){ $product=Product::where('sku',$sku)->firstOrFail(); abort_unless($product->status === 'active',404); $product->load(['brand','category','media','variants']); return view('storefront.products.show',compact('product')); }
+
     public function show(Product $product)
     {
         abort_unless($product->status === 'active', 404);
