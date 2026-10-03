@@ -19,10 +19,10 @@
         <aside class="h-fit rounded-3xl border bg-slate-950 p-6 text-white">
             <h2 class="text-xl font-bold">Join this group</h2>
             <p class="mt-2 text-sm text-slate-300">Payment is collected immediately. If the required buyer condition is not reached before the campaign ends, the paid amount is automatically returned to your Chacha Wallet.</p>
-            <form method="POST" action="{{ route('group-buy.join', $campaign) }}" class="mt-6">
+            <form method="POST" action="{{ route('customer.group-buying.join', $campaign) }}" class="mt-6">
                 @csrf
                 <label class="text-sm text-slate-300">Quantity</label>
-                <input name="quantity" type="number" min="1" value="1" class="mt-2 w-full rounded-xl px-4 py-3 text-slate-950">
+                <input name="quantity" type="number" min="1" max="99" value="1" class="mt-2 w-full rounded-xl px-4 py-3 text-slate-950">
                 <button class="mt-4 w-full rounded-2xl bg-white px-5 py-4 font-bold text-slate-950">Join & Pay</button>
             </form>
         </aside>
