@@ -8,7 +8,7 @@ class NotificationService
 {
     public function send(int $userId,string $title,string $message,string $type='system',?string $url=null): void
     {
-        DB::table('notifications')->insert(['user_id'=>$userId,'type'=>$type,'title'=>$title,'message'=>$message,'url'=>$url,'created_at'=>now(),'updated_at'=>now()]);
+        DB::table('notifications')->insert(['user_id'=>$userId,'type'=>$type,'title'=>$title,'message'=>$message,'action_url'=>$url,'created_at'=>now(),'updated_at'=>now()]);
     }
     public function orderStatus(int $userId,string $orderNumber,string $status,?string $url=null): void
     {
