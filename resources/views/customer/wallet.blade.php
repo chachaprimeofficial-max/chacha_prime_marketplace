@@ -1,5 +1,7 @@
-<!doctype html>
-<html lang="en">
+@extends('layouts.storefront')
+@section('title','Wallet | Chacha Prime')
+@section('content')
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -16,9 +18,9 @@
         th{color:var(--muted);font-weight:600;background:#fafafa}.credit{font-weight:700}.debit{font-weight:700}
         .empty{padding:40px;text-align:center;color:var(--muted)}
     </style>
-</head>
-<body>
-<div class="wrap">
+
+
+<section class="mx-auto max-w-6xl px-4 py-10"><div class="wrap">
     <div class="top"><div><div class="brand">Chacha Prime</div><div class="sub">Wallet & transaction history</div></div></div>
     <section class="balance">
         <small>Available balance</small>
@@ -45,6 +47,7 @@
             <div class="empty">No wallet transactions yet.</div>
         @endif
     </section>
-</div>
-</body>
-</html>
+
+
+
+@endsection
