@@ -40,6 +40,7 @@ class GroupBuyingService
     return 'successful';
    }
    foreach($participants as $p){
+    if (DB::table('group_buying_orders')->where('id',$p->id)->where('status','refunded')->exists()) continue;
     $orderItem=DB::table('order_items')->where('order_id',$p->order_id)->first();
     if($orderItem) app(InventoryService::class)->restore((int)$orderItem->product_id,$orderItem->variant_id?(int)$orderItem->variant_id:null,(int)$orderItem->quantity,'return','group_buying',$p->id,$p->user_id);
     app(WalletService::class)->credit((int)$p->user_id,(float)$p->amount,'group_refund','Group buying campaign #'.$campaignId.' did not reach its required buyer condition.','group_buying_order',(int)$p->id);
