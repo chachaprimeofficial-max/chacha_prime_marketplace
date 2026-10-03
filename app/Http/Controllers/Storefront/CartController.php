@@ -43,7 +43,7 @@ class CartController extends Controller
     private function cart(Request $request): array
     {
         $rows=[];$subtotal=0;$session=$request->session()->get('chacha_cart',[]);
-        foreach($session as $key=>$row){if((int)($row['quantity']??0)<1)continue;$product=Product::query()->where('id',$row['product_id'])->where('status','active')->first();if(!$product)continue;$variant=$row['variant_id']?DB::table('product_variants')->where('id',$row['variant_id'])->first():null;$price=(float)($variant?->price ?? $product->retail_price);$line=$price*(int)$row['quantity'];$subtotal+=$line;$rows[]=['key'=>$key,'product'=>$product,'variant'=>$variant,'quantity'=>$row['quantity'],'price'=>$price,'line_total'=>$line];}
+        foreach($session as $key=>$row){if((int)($row['quantity']??0)<1)continue;$product=Product::query()->where('id',$row['product_id'])->where('status','active')->first();if(!$product)continue;$variant=$row['variant_id']?DB::table('product_variants')->where('id',$row['variant_id'])->where('product_id',$product->id)->first():null;$price=(float)($variant?->price ?? $product->retail_price);$line=$price*(int)$row['quantity'];$subtotal+=$line;$rows[]=['key'=>$key,'product'=>$product,'variant'=>$variant,'quantity'=>$row['quantity'],'price'=>$price,'line_total'=>$line];}
         return ['items'=>$rows,'subtotal'=>$subtotal,'count'=>array_sum(array_column($rows,'quantity')),'discount'=>0,'shipping'=>0,'total'=>$subtotal];
     }
 }
