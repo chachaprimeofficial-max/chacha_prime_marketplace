@@ -1,14 +1,17 @@
 <?php
 namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
-use App\Services\TwoFactorService;
+use App\Services\TotpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 class SecurityController extends Controller
 {
- public function index(){return view('customer.security.index',['user'=>auth()->user(),'events'=>DB::table('login_security_events')->where('user_id',auth()->id())->latest()->limit(20)->get()]);}
- public function enable2fa(Request $r){$d=$r->validate(['secret'=>'required|string|min:16']);app(TwoFactorService::class)->enable(auth()->id(),$d['secret']);return back()->with('success','Two-factor authentication enabled.');}
- public function disable2fa(Request $r){$d=$r->validate(['current_password'=>'required']);abort_unless(\Hash::check($d['current_password'],$r->user()->password),422,'Current password is incorrect.');app(TwoFactorService::class)->disable(auth()->id());return back()->with('success','Two-factor authentication disabled.');}
- public function recoveryCodes(){return response()->json(['codes'=>app(TwoFactorService::class)->recoveryCodes(auth()->id())]);}
- public function password(Request $r){$d=$r->validate(['current_password'=>'required','password'=>'required|string|min:8|confirmed']);abort_unless(\Hash::check($d['current_password'],$r->user()->password),422,'Current password is incorrect.');$r->user()->forceFill(['password'=>\Hash::make($d['password'])])->save();DB::table('login_security_events')->insert(['user_id'=>$r->user()->id,'event'=>'password_changed','ip_address'=>$r->ip(),'user_agent'=>$r->userAgent(),'created_at'=>now()]);return back()->with('success','Password changed successfully.');}
+ public function index(){return view('customer.security',['twoFactorEnabled'=>(bool)auth()->user()->two_factor_enabled]);}
+ public function password(Request $r){$d=$r->validate(['current_password'=>'required','password'=>'required|string|min:8|confirmed']);abort_unless(Hash::check($d['current_password'],$r->user()->password),422,'Current password is incorrect.');$r->user()->update(['password'=>Hash::make($d['password'])]);return back()->with('success','Password changed successfully.');}
+ public function setup2fa(Request $r,TotpService $totp){$secret=$totp->secret();$r->session()->put('pending_2fa_secret',$secret);return view('customer.two-factor-setup',['secret'=>$secret,'uri'=>$totp->provisioningUri($secret,$r->user()->email)]);}
+ public function confirm2fa(Request $r,TotpService $totp){$d=$r->validate(['code'=>'required|string|size:6']);$secret=$r->session()->get('pending_2fa_secret');abort_unless($secret&&$totp->verify($secret,$d['code']),422,'Invalid authenticator code.');$r->user()->update(['two_factor_enabled'=>1,'two_factor_secret'=>encrypt($secret)]);$r->session()->forget('pending_2fa_secret');return redirect()->route('customer.security')->with('success','Two-factor authentication enabled.');}
+ public function enable2fa(Request $r){return $this->confirm2fa($r,app(TotpService::class));}
+ public function disable2fa(Request $r,TotpService $totp){$d=$r->validate(['code'=>'required|string|size:6','current_password'=>'required']);abort_unless(Hash::check($d['current_password'],$r->user()->password),422,'Current password is incorrect.');$secret=$r->user()->two_factor_secret?decrypt($r->user()->two_factor_secret):null;abort_unless($secret&&$totp->verify($secret,$d['code']),422,'Invalid authenticator code.');$r->user()->update(['two_factor_enabled'=>0,'two_factor_secret'=>null]);DB::table('two_factor_recovery_codes')->where('user_id',$r->user()->id)->delete();return back()->with('success','Two-factor authentication disabled.');}
+ public function recoveryCodes(){return response()->json(['codes'=>DB::table('two_factor_recovery_codes')->where('user_id',auth()->id())->get(['code_hash','created_at'])]);}
 }
