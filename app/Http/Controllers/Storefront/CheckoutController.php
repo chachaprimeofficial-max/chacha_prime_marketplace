@@ -100,6 +100,8 @@ class CheckoutController extends Controller
     ]);
    }
 
+   app(\App\Services\InvoiceService::class)->createForOrder($orderId);
+
    DB::table('order_status_history')->insert([
     'order_id'=>$orderId,'status'=>'pending','note'=>'Order placed','created_by'=>$uid,'created_at'=>now()
    ]);
