@@ -3,5 +3,16 @@ namespace App\Services;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 class ProductImportService {
- public function import(array $source):int{$title=trim($source['title']??$source['name']??'Imported Product');$sku=trim($source['sku']??'CP-'.strtoupper(Str::random(10)));return DB::transaction(function()use($source,$title,$sku){$existing=DB::table('products')->where('sku',$sku)->first();$data=['title'=>$title,'sku'=>$sku,'product_code'=>$source['product_code']??$sku,'short_description'=>$source['short_description']??null,'description'=>$source['description']??null,'retail_price'=>(float)($source['retail_price']??0),'wholesale_price'=>isset($source['wholesale_price'])?(float)$source['wholesale_price']:null,'group_price'=>isset($source['group_price'])?(float)$source['group_price']:null,'stock_qty'=>(int)($source['stock_qty']??0),'status'=>'draft','updated_at'=>now()];if($existing){DB::table('products')->where('id',$existing->id)->update($data);$id=$existing->id;}else{$data['slug']=Str::slug($title).'-'.Str::lower(Str::random(6));$data['qr_value']='CP-P-'.$sku;$data['created_at']=now();$id=DB::table('products')->insertGetId($data);}foreach(($source['images']??[]) as $index=>$url){if(filter_var($url,FILTER_VALIDATE_URL))DB::table('scraper_imports')->insert(['source'=>$source['source']??'manual','source_url'=>$url,'status'=>'completed','raw_data'=>json_encode(['product_id'=>$id,'media_url'=>$url]),'created_at'=>now(),'updated_at'=>now()]);}DB::table('scraper_imports')->insert(['source'=>$source['source']??'manual','source_url'=>$source['source_url']??'','status'=>'completed','raw_data'=>json_encode(array_merge($source,['product_id'=>$id]),JSON_UNESCAPED_UNICODE),'created_at'=>now(),'updated_at'=>now()]);return $id;});}
+ public function import(array $source):int {
+  $title=trim($source['title']??$source['name']??'Imported Product');
+  $sku=trim($source['sku']??'CP-'.strtoupper(Str::random(10)));
+  return DB::transaction(function()use($source,$title,$sku){
+   $existing=DB::table('products')->where('sku',$sku)->first();
+   $data=['title'=>$title,'sku'=>$sku,'product_code'=>$source['product_code']??$sku,'short_description'=>$source['short_description']??null,'description'=>$source['description']??null,'retail_price'=>(float)($source['retail_price']??0),'wholesale_price'=>isset($source['wholesale_price'])?(float)$source['wholesale_price']:null,'group_price'=>isset($source['group_price'])?(float)$source['group_price']:null,'stock_qty'=>(int)($source['stock_qty']??0),'status'=>'draft','updated_at'=>now()];
+   if($existing){DB::table('products')->where('id',$existing->id)->update($data);$id=$existing->id;}else{$data['slug']=Str::slug($title).'-'.Str::lower(Str::random(6));$data['qr_value']='CP-P-'.$sku;$data['created_at']=now();$id=DB::table('products')->insertGetId($data);}
+   foreach(array_values($source['images']??[]) as $index=>$url) if(filter_var($url,FILTER_VALIDATE_URL)) DB::table('product_media')->insert(['product_id'=>$id,'type'=>'image','path'=>$url,'alt_text'=>$title,'sort_order'=>$index,'is_primary'=>$index===0?1:0,'created_at'=>now()]);
+   DB::table('scraper_imports')->insert(['source'=>$source['source']??'manual','source_url'=>$source['source_url']??null,'status'=>'completed','raw_data'=>json_encode(array_merge($source,['product_id'=>$id]),JSON_UNESCAPED_UNICODE),'created_at'=>now(),'updated_at'=>now()]);
+   return $id;
+  });
+ }
 }
